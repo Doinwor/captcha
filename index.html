@@ -220,6 +220,7 @@
     }
     .dots .dot.on { width: 18px; background: var(--ink); }
     .dots .dot.done { background: var(--accent); }
+    .dots .dot.fail { width: 18px; background: #e0344b; }
 
     /* honeypots — invisible to humans, tempting to bots */
     .hp {
@@ -354,9 +355,9 @@
       var challenge = null;
       var solved = false;
       var passedL1 = false;
+      var failed = false;
       var renderedAt = 0;
       var attempts = 0;
-      var lockedUntil = 0;
 
       var ptrDist = 0, ptrTurns = 0, lastX = null, lastY = null, prevAng = null;
       var keyCount = 0;
@@ -634,8 +635,24 @@
         dot2.className = 'dot' + (b ? ' ' + b : '');
       }
 
+      function finalFail(stage) {
+        if (failed) return;
+        failed = true;
+        card.classList.add('bad');
+        card.classList.remove('ok');
+        shake();
+        inp.disabled = true;
+        check.disabled = true;
+        l2check.disabled = true;
+        if (hpcb) hpcb.disabled = true;
+        if (L2 && L2.checks) for (var i = 0; i < L2.checks.length; i++) L2.checks[i].disabled = true;
+        if (stage === 2) setDots('done', 'fail');
+        else setDots('fail', passedL1 ? 'on' : '');
+        setMsg('Вы не прошли проверку. Обновите страницу, чтобы попробовать снова.', 'bad');
+      }
+
       function refreshCode() {
-        if (solved || passedL1) return;
+        if (solved || passedL1 || failed) return;
         challenge = newChallenge();
         inp.value = '';
         inp.setAttribute('placeholder', challenge.mode === 'math' ? 'ответ' : 'код');
@@ -871,17 +888,9 @@
         l2bar.style.transition = '';
       }
 
-      function openLock(sec) {
-        lockedUntil = Date.now() + sec * 1000;
-        setMsg('Слишком много попыток, подождите ' + sec + ' сек', 'bad');
-        l2check.disabled = true;
-        window.setTimeout(function () { if (!solved) l2check.disabled = false; }, sec * 1000);
-      }
-
       function checkL2() {
-        if (!L2 || solved) return;
-        if (hpcb.checked) { hpcb.checked = false; l2Attempts = 0; renderL2(); openLock(60); return; }
-        if (Date.now() < lockedUntil) { setMsg('Слишком много попыток, подождите', 'bad'); return; }
+        if (!L2 || solved || failed) return;
+        if (hpcb.checked) { hpcb.checked = false; finalFail(2); return; }
         var got = [];
         for (var i = 0; i < L2.n; i++) if (L2.checks[i].checked) got.push(i);
         var ans = L2.answer, ok = got.length === ans.length;
@@ -894,8 +903,8 @@
           card.classList.add('bad');
           card.classList.remove('ok');
           shake();
-          if (l2Attempts >= 3) { l2Attempts = 0; openLock(20); }
-          else setMsg('Неверно, попробуйте ещё раз', 'bad');
+          if (l2Attempts >= 3) { finalFail(2); return; }
+          setMsg('Неверно, попробуйте ещё раз', 'bad');
           renderL2();
         }
       }
@@ -947,6 +956,7 @@
       }
 
       function fail(t) {
+        if (failed) return;
         card.classList.add('bad');
         card.classList.remove('ok');
         setMsg(t || 'Неверно, попробуйте ещё раз', 'bad');
@@ -962,13 +972,12 @@
       }
 
       function checkCode() {
-        if (solved || passedL1) return;
-        if (Date.now() < lockedUntil) { setMsg('Слишком много попыток, подождите', 'bad'); return; }
-        if (hpEmail.value || hpUrl.value) { hpEmail.value = ''; hpUrl.value = ''; fail('Не удалось подтвердить, что вы человек'); return; }
+        if (solved || passedL1 || failed) return;
+        if (hpEmail.value || hpUrl.value) { hpEmail.value = ''; hpUrl.value = ''; finalFail(1); return; }
 
         var elapsed = Date.now() - renderedAt;
         var human = (keyCount >= 3) || (ptrDist > 40 && ptrTurns >= 1);
-        if (elapsed < 800 || !human) { fail('Подтвердите, что вы человек'); return; }
+        if (elapsed < 800 || !human) { finalFail(1); return; }
 
         var val = inp.value.trim().toUpperCase();
         if (!val) { card.classList.add('bad'); setMsg('Введите ответ', 'bad'); return; }
@@ -977,7 +986,7 @@
           success();
         } else {
           attempts++;
-          if (attempts >= 5) { attempts = 0; lockedUntil = Date.now() + 20000; fail('Слишком много попыток, подождите 20 сек'); }
+          if (attempts >= 5) { attempts = 0; finalFail(1); }
           else fail('Неверно, попробуйте ещё раз');
         }
       }
