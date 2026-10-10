@@ -3,100 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Демо: капча + кнопка «Продолжить»</title>
+  <title>Пример вставки капчи</title>
   <style>
     * { box-sizing: border-box; }
     body {
-      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-      padding: 40px 20px;
-      text-align: center;
-      color: #141414;
       margin: 0;
-      /* это фон «сайта-хозяина»; капча в iframe прозрачная — видно только плашку */
-      background-color: #eef0f4;
-      background-image:
-        linear-gradient(45deg, #e2e6ec 25%, transparent 25%, transparent 75%, #e2e6ec 75%),
-        linear-gradient(45deg, #e2e6ec 25%, transparent 25%, transparent 75%, #e2e6ec 75%);
-      background-size: 24px 24px;
-      background-position: 0 0, 12px 12px;
+      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color: #141414;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      padding: 48px 20px;
     }
-    h2 { font-weight: 600; }
-    .hint { color: #667; font-size: 13px; margin: -6px 0 22px; }
-    .hint code { background: #ffffffcc; padding: 1px 5px; border-radius: 4px; }
-    .wrap { max-width: 540px; margin: 0 auto; }
+    .card { width: 100%; max-width: 520px; }
+    h1 { font-size: 20px; font-weight: 600; margin: 0 0 6px; }
+    p { color: #888; font-size: 14px; line-height: 1.5; margin: 0 0 22px; }
+    p code { background: #f1f2f4; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
     iframe {
       border: 0;
       display: block;
-      margin: 0 auto 4px;
       width: 100%;
       height: 180px;
       background: transparent;
+      margin-bottom: 18px;
     }
     button {
-      font-size: 18px;
-      padding: 12px 30px;
-      border: none;
+      font: inherit;
+      font-size: 16px;
+      padding: 12px 28px;
+      border: 0;
       border-radius: 8px;
       background: #141414;
       color: #fff;
       cursor: pointer;
       transition: background .2s;
     }
-    button:disabled { background: #ccc; cursor: not-allowed; }
-    #status { margin-top: 12px; color: #666; font-size: 14px; min-height: 18px; }
-    #log {
-      margin-top: 20px;
-      text-align: left;
-      font: 12px/1.5 Consolas, monospace;
-      background: #fff;
-      border: 1px solid #e2e4e8;
-      border-radius: 8px;
-      padding: 10px 12px;
-      color: #555;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
+    button:disabled { background: #d7d7d7; cursor: not-allowed; }
+    .status { margin-top: 12px; font-size: 13px; color: #888; min-height: 18px; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h2>Пройдите капчу, чтобы продолжить</h2>
-    <p class="hint">Клетчатый фон — это «сайт-хозяин». Капча в <code>&lt;iframe&gt;</code> полностью прозрачная: рисуется только сама плашка.</p>
+  <div class="card">
+    <h1>Пример вставки капчи на сайт</h1>
+    <p>
+      Это обычная страница-пример. Капча ниже вставлена через <code>&lt;iframe&gt;</code> —
+      она прозрачная, поэтому фон вокруг плашки — это фон самого сайта.
+      Кнопка «Продолжить» активируется после прохождения капчи.
+    </p>
 
-    <iframe
-      id="captcha-frame"
-      src="https://doinwor.github.io/captcha/"
-      width="500"
-      height="180"
-      title="Капча"
-      sandbox="allow-scripts allow-same-origin allow-forms"
-    ></iframe>
+    <iframe id="captcha-frame" src="https://doinwor.github.io/captcha/"
+            width="500" height="180" title="Капча"
+            sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
 
     <button id="continue-btn" disabled>Продолжить →</button>
-    <div id="status">Ожидание прохождения капчи…</div>
-    <div id="log">Ожидание сообщения от капчи…</div>
+    <div class="status" id="status">Пройдите капчу, чтобы активировать кнопку…</div>
   </div>
 
   <script>
     var EXPECTED_ORIGIN = 'https://doinwor.github.io';
-    var status = document.getElementById('status');
-    var log = document.getElementById('log');
-    var btn = document.getElementById('continue-btn');
     var frame = document.getElementById('captcha-frame');
-
-    function line(t) { log.textContent += '\n' + t; }
+    var btn = document.getElementById('continue-btn');
+    var status = document.getElementById('status');
 
     window.addEventListener('message', function (e) {
-      line('message from origin: ' + e.origin + ' -> ' + JSON.stringify(e.data));
-      // в проде обязательно проверяем origin; при локальном тесте (file://) origin будет 'null'
       if (e.origin !== EXPECTED_ORIGIN && e.origin !== 'null') return;
+      // капча сама сообщает свою высоту — подгоняем iframe
       if (e.data && e.data.type === 'captcha-resize' && e.data.height) {
-        // капча обрезается ровно до плашки — подгоняем высоту iframe
         frame.style.height = Math.max(120, Math.min(500, e.data.height)) + 'px';
       }
+      // капча пройдена
       if (e.data && e.data.type === 'captcha-success') {
         btn.disabled = false;
-        status.textContent = '✅ Капча пройдена — кнопка активна';
+        status.textContent = 'Капча пройдена — кнопка активна.';
       }
     });
 
