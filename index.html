@@ -1043,7 +1043,9 @@
       function postHeight() {
         if (!embedded) return;
         try {
-          window.parent.postMessage({ type: 'captcha-resize', height: Math.ceil(document.documentElement.scrollHeight) }, '*');
+          var card = document.querySelector('.captcha');
+          var h = card ? card.getBoundingClientRect().height : document.documentElement.scrollHeight;
+          window.parent.postMessage({ type: 'captcha-resize', height: Math.ceil(h) }, '*');
         } catch (e) {}
       }
       window.addEventListener('load', postHeight);
