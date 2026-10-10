@@ -19,20 +19,21 @@
 
     html, body { height: 100%; }
 
+    /* transparent page: the card is the only thing painted, so it embeds cleanly in any iframe */
     body {
-      background: #fff;
+      background: transparent;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 16px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       color: var(--ink);
     }
 
-    /* cropped to the card when embedded in an iframe */
+    /* cropped tightly to the card when embedded in an iframe */
     html.embedded, html.embedded body { height: auto; }
-    html.embedded body { align-items: flex-start; padding: 4px 0 24px; }
+    html.embedded body { padding: 8px; }
 
     /* ── card: fixed footprint, stages are stacked in the same cell ── */
     .captcha {
