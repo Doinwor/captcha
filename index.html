@@ -40,12 +40,13 @@
        прямые края + нулевые отступы — iframe обрезается ровно по прямоугольнику плашки */
     html.embedded, html.embedded body { height: auto; }
     html.embedded body { padding: 0; }
-    html.embedded .captcha { box-shadow: none; }
+    /* плашка занимает всю ширину окошка — тогда справа от неё нет белой полосы */
+    html.embedded .captcha { width: 100%; box-shadow: none; }
 
     /* ── card: fixed footprint, stages are stacked in the same cell ── */
     .captcha {
       position: relative;
-      width: min(480px, 94vw);
+      width: min(480px, 100%);
       border: 1px solid var(--line);
       border-radius: 0;
       background: #fff;

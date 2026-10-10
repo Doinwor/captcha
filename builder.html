@@ -58,7 +58,7 @@
 
           <div class="field">
             <span>Ширина окошка, px</span>
-            <input id="bWidth" type="number" min="260" max="760" step="10" value="480">
+            <input id="bWidth" type="number" min="260" max="480" step="10" value="480">
           </div>
 
           <div class="callout">
@@ -146,7 +146,7 @@
     function build() {
       var text  = label();
       var url   = target();
-      var width = Math.max(260, Math.min(760, parseInt(w.value, 10) || 480));
+      var width = Math.max(260, Math.min(480, parseInt(w.value, 10) || 480));
       var urlJs = JSON.stringify(url);
       var nav   = nw.checked
         ? "window.open(" + urlJs + ", '_blank', 'noopener');"
@@ -156,10 +156,11 @@
       L.push('<!-- 1) Окошко капчи -->');
       L.push('<iframe id="cap" src="https://doinwor.github.io/captcha/"');
       L.push('        title="Капча" width="' + width + '" height="180"');
+      L.push('        style="display:block;border:0;background:transparent"');
       L.push('        sandbox="allow-scripts allow-same-origin allow-forms"></iframe>');
       L.push('');
       L.push('<!-- 2) Кнопка (заблокирована, пока проверка не пройдена) -->');
-      L.push('<button id="go" type="button" disabled>' + esc(text) + '</button>');
+      L.push('<button id="go" type="button" disabled style="display:block;margin-top:12px">' + esc(text) + '</button>');
       L.push('');
       L.push('<!-- 3) Скрипт: связать кнопку с капчей -->');
       L.push('<script>');
