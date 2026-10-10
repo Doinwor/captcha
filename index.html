@@ -30,6 +30,10 @@
       color: var(--ink);
     }
 
+    /* cropped to the card when embedded in an iframe */
+    html.embedded, html.embedded body { height: auto; }
+    html.embedded body { align-items: flex-start; padding: 4px 0 24px; }
+
     /* ── card: fixed footprint, stages are stacked in the same cell ── */
     .captcha {
       position: relative;
@@ -1011,9 +1015,29 @@
       window.addEventListener('resize', function () {
         if (passedL1) drawSolved(); else drawCode();
         if (L2 && !solved && passedL1) { drawL2Task(); drawL2(); }
+        postHeight();
       });
 
+      /* ── embed: crop the page to the card and report the height to the parent ── */
+      var embedded = window.parent && window.parent !== window;
+      if (embedded) document.documentElement.className += ' embedded';
+
+      function postHeight() {
+        if (!embedded) return;
+        try {
+          window.parent.postMessage({ type: 'captcha-resize', height: Math.ceil(document.documentElement.scrollHeight) }, '*');
+        } catch (e) {}
+      }
+      window.addEventListener('load', postHeight);
+      window.addEventListener('message', function (e) {
+        if (e.data && e.data.type === 'captcha-height-request') postHeight();
+      });
+      window.setTimeout(postHeight, 60);
+      window.setTimeout(postHeight, 400);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(postHeight);
+
       refreshCode();
+      postHeight();
     })();
   </script>
 </body>

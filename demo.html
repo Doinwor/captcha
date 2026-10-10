@@ -73,6 +73,7 @@
     var status = document.getElementById('status');
     var log = document.getElementById('log');
     var btn = document.getElementById('continue-btn');
+    var frame = document.getElementById('captcha-frame');
 
     function line(t) { log.textContent += '\n' + t; }
 
@@ -80,10 +81,19 @@
       line('message from origin: ' + e.origin + ' -> ' + JSON.stringify(e.data));
       // в проде обязательно проверяем origin; при локальном тесте (file://) origin будет 'null'
       if (e.origin !== EXPECTED_ORIGIN && e.origin !== 'null') return;
+      if (e.data && e.data.type === 'captcha-resize' && e.data.height) {
+        // капча обрезается ровно до плашки — подгоняем высоту iframe
+        frame.style.height = Math.max(120, Math.min(500, e.data.height)) + 'px';
+      }
       if (e.data && e.data.type === 'captcha-success') {
         btn.disabled = false;
         status.textContent = '✅ Капча пройдена — кнопка активна';
       }
+    });
+
+    // запрашиваем высоту у капчи, когда она загрузилась
+    frame.addEventListener('load', function () {
+      try { frame.contentWindow.postMessage({ type: 'captcha-height-request' }, EXPECTED_ORIGIN); } catch (err) {}
     });
 
     btn.addEventListener('click', function () {
