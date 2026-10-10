@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Пример — і. капча</title>
+  <meta name="description" content="Живой пример: форма мини-опроса, где капча стоит перед кнопкой «Отправить» и разблокирует её после прохождения.">
+  <script>try{var t=localStorage.getItem('cap-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="official.html">і<span class="tri-text">.</span>&nbsp;капча<span class="tag">docs</span></a>
+      <nav class="nav__links">
+        <a href="official.html">Обзор</a>
+        <a href="install.html">Установка</a>
+        <a href="example.html">Пример</a>
+        <a href="events.html">События</a>
+        <a href="security.html">Безопасность</a>
+        <a class="nav__gh" href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему"><span class="theme-toggle__knob"></span></button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <span class="badge">живой пример</span>
+      <h1>Форма с капчей</h1>
+      <p class="lead">
+        Мини-опрос. Капча стоит <strong>прямо перед кнопкой «Отправить»</strong> — кнопка станет активной
+        только после того, как её пройдут. Это тот же код, что и в&nbsp;<a class="link" href="install.html">инструкции</a>.
+      </p>
+
+      <form class="form" id="survey" novalidate>
+        <div class="field">
+          <label for="name">Как вас зовут?</label>
+          <input class="input" type="text" id="name" name="name" placeholder="Ваше имя" required>
+        </div>
+
+        <div class="field">
+          <label>Насколько вам нравится проект?</label>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="score" value="5" checked> Очень нравится</label>
+            <label class="opt"><input type="radio" name="score" value="4"> Хорошо</label>
+            <label class="opt"><input type="radio" name="score" value="3"> Нормально</label>
+            <label class="opt"><input type="radio" name="score" value="2"> Есть что улучшить</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="improve">Что улучшить? <span class="hint">— по желанию</span></label>
+          <textarea class="textarea" id="improve" name="improve" placeholder="Ваши идеи…"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="email">Email <span class="hint">— по желанию, для ответа</span></label>
+          <input class="input" type="email" id="email" name="email" placeholder="you@example.com">
+        </div>
+
+        <div class="captcha-slot">
+          <iframe id="cap" src="https://doinwor.github.io/captcha/"
+                  title="Капча" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+        </div>
+
+        <div class="form__foot">
+          <button class="btn btn--tri" id="submit" type="submit" disabled>Отправить</button>
+          <span class="form__note" id="note">Пройдите капчу, чтобы активировать кнопку…</span>
+        </div>
+      </form>
+
+      <div class="result" id="result">
+        <b>Спасибо! Ответ записан.</b>
+        <p>Это демо: данные никуда не отправляются. На реальном сайте здесь был бы запрос к&nbsp;вашему серверу.</p>
+      </div>
+
+      <nav class="pager">
+        <a href="install.html">← Установка</a>
+        <a class="next" href="events.html">События →</a>
+      </nav>
+    </div>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <span>і.&nbsp;капча · студия і. · 2026</span>
+      <span>
+        <a href="official.html">Обзор</a> ·
+        <a href="install.html">Установка</a> ·
+        <a href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a> ·
+        <a href="https://doinwor.github.io/go-ecosystem/" target="_blank" rel="noopener">GO</a>
+      </span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var OK = 'https://doinwor.github.io';
+      var cap = document.getElementById('cap');
+      var form = document.getElementById('survey');
+      var submit = document.getElementById('submit');
+      var note = document.getElementById('note');
+      var result = document.getElementById('result');
+
+      window.addEventListener('message', function (e) {
+        if (e.origin !== OK) return;
+        var d = e.data || {};
+        if (d.type === 'captcha-resize' && d.height) {
+          cap.style.height = Math.max(120, Math.min(500, d.height)) + 'px';
+        }
+        if (d.type === 'captcha-success') {
+          submit.disabled = false;
+          note.textContent = 'Капча пройдена — можно отправить.';
+        }
+      });
+
+      cap.addEventListener('load', function () {
+        try { cap.contentWindow.postMessage({ type: 'captcha-height-request' }, OK); } catch (err) {}
+      });
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (submit.disabled) return;
+        result.classList.add('show');
+        submit.disabled = true;
+        submit.textContent = 'Отправлено';
+        note.textContent = 'Ответ отправлен.';
+        result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    })();
+  </script>
+</body>
+</html>
