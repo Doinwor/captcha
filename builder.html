@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Конструктор — і. капча</title>
+  <meta name="description" content="Соберите код капчи: впишите надпись на кнопке и адрес, куда она ведёт, — и получите готовый код для вставки на сайт.">
+  <script>try{var t=localStorage.getItem('cap-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="official.html">і<span class="tri-text">.</span>&nbsp;капча<span class="tag">docs</span></a>
+      <nav class="nav__links">
+        <a href="official.html">Обзор</a>
+        <a href="install.html">Установка</a>
+        <a href="how.html">Принцип</a>
+        <a href="events.html">События</a>
+        <a href="examples.html">Примеры</a>
+        <a href="builder.html">Конструктор</a>
+        <a href="security.html">Безопасность</a>
+        <a class="nav__gh" href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему"><span class="theme-toggle__knob"></span></button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <span class="badge">собери код за минуту</span>
+      <h1>Конструктор капчи</h1>
+      <p class="lead">
+        Впишите <strong>надпись на кнопке</strong> и&nbsp;<strong>куда она ведёт</strong> — справа сразу
+        появится рабочий предпросмотр, а&nbsp;ниже&nbsp;— <strong>готовый код</strong>, который нужно просто
+        скопировать и&nbsp;вставить на&nbsp;свою страницу.
+      </p>
+
+      <div class="builder">
+        <div class="builder__form">
+          <div class="field">
+            <span>Надпись на кнопке</span>
+            <input id="bText" type="text" value="Продолжить" autocomplete="off">
+          </div>
+
+          <div class="field">
+            <span>Куда ведёт кнопка (URL)</span>
+            <input id="bUrl" type="text" value="https://example.com/thanks" autocomplete="off" spellcheck="false">
+          </div>
+
+          <div class="field field--check">
+            <input id="bNew" type="checkbox" checked>
+            <span>Открывать в новой вкладке</span>
+          </div>
+
+          <div class="field">
+            <span>Ширина окошка, px</span>
+            <input id="bWidth" type="number" min="260" max="760" step="10" value="480">
+          </div>
+
+          <div class="callout">
+            <b>Три части кода</b>
+            <p>Окошко капчи, кнопка и&nbsp;скрипт. Кнопка заблокирована, пока проверка не&nbsp;пройдена.</p>
+          </div>
+        </div>
+
+        <div class="builder__preview">
+          <div class="eyebrow">Предпросмотр</div>
+          <iframe id="pv" class="preview__frame" scrolling="no"
+                  src="https://doinwor.github.io/captcha/"
+                  title="Предпросмотр капчи"
+                  sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+          <div class="preview__row">
+            <button id="pvBtn" class="btn btn--tri" type="button" disabled>Продолжить</button>
+          </div>
+          <p class="preview__cap" id="pvNote">После прохождения проверки кнопка откроется.</p>
+        </div>
+      </div>
+
+      <section>
+        <div class="eyebrow">Готовый код</div>
+        <h2>Скопируйте и вставьте на свою страницу</h2>
+        <div class="codeblock">
+          <div class="codeblock__bar">
+            <span class="codeblock__label">embed.html</span>
+            <button class="copy-btn" type="button">копировать</button>
+          </div>
+          <pre><code id="out"></code></pre>
+        </div>
+        <p>Если нужно разобраться в&nbsp;деталях — загляните в&nbsp;<a class="link" href="install.html">Установку</a>
+          и&nbsp;<a class="link" href="events.html">События</a>. Больше вариантов — на&nbsp;странице
+          <a class="link" href="examples.html">Примеры</a>.</p>
+      </section>
+
+      <section>
+        <div class="eyebrow">Подсказка</div>
+        <h2>Куда вставлять код</h2>
+        <ul class="plain">
+          <li><strong>Окошко</strong> — туда, где человек должен пройти проверку (в&nbsp;форме или перед переходом).</li>
+          <li><strong>Кнопку</strong> — рядом, обычно это «войти», «отправить» или «продолжить».</li>
+          <li><strong>Скрипт</strong> — один раз на&nbsp;странице, можно прямо перед <code>&lt;/body&gt;</code>.</li>
+        </ul>
+      </section>
+
+      <nav class="pager">
+        <a href="examples.html">← Примеры</a>
+        <a class="next" href="security.html">Безопасность →</a>
+      </nav>
+    </div>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <span>і.&nbsp;капча · студия і. · 2026</span>
+      <span>
+        <a href="official.html">Обзор</a> ·
+        <a href="install.html">Установка</a> ·
+        <a href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a> ·
+        <a href="https://doinwor.github.io/go-ecosystem/" target="_blank" rel="noopener">GO</a>
+      </span>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
+  <script>
+  (function () {
+    var CAP = 'https://doinwor.github.io';
+    var t    = document.getElementById('bText');
+    var u    = document.getElementById('bUrl');
+    var nw   = document.getElementById('bNew');
+    var w    = document.getElementById('bWidth');
+    var pv   = document.getElementById('pv');
+    var pvb  = document.getElementById('pvBtn');
+    var note = document.getElementById('pvNote');
+    var out  = document.getElementById('out');
+
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function label() { return t.value || 'Продолжить'; }
+    function target() { return u.value || 'https://example.com/thanks'; }
+
+    function build() {
+      var text  = label();
+      var url   = target();
+      var width = Math.max(260, Math.min(760, parseInt(w.value, 10) || 480));
+      var urlJs = JSON.stringify(url);
+      var nav   = nw.checked
+        ? "window.open(" + urlJs + ", '_blank', 'noopener');"
+        : "window.location.href = " + urlJs + ";";
+
+      var L = [];
+      L.push('<!-- 1) Окошко капчи -->');
+      L.push('<iframe id="cap" src="https://doinwor.github.io/captcha/"');
+      L.push('        title="Капча" width="' + width + '" height="180"');
+      L.push('        sandbox="allow-scripts allow-same-origin allow-forms"></iframe>');
+      L.push('');
+      L.push('<!-- 2) Кнопка (заблокирована, пока проверка не пройдена) -->');
+      L.push('<button id="go" type="button" disabled>' + esc(text) + '</button>');
+      L.push('');
+      L.push('<!-- 3) Скрипт: связать кнопку с капчей -->');
+      L.push('<script>');
+      L.push('(function () {');
+      L.push("  var CAP = 'https://doinwor.github.io';");
+      L.push("  var frame = document.getElementById('cap');");
+      L.push("  var btn = document.getElementById('go');");
+      L.push('');
+      L.push("  window.addEventListener('message', function (e) {");
+      L.push('    if (e.origin !== CAP) return;');
+      L.push('    var d = e.data || {};');
+      L.push("    if (d.type === 'captcha-resize') frame.style.height = d.height + 'px';");
+      L.push("    if (d.type === 'captcha-success' && d.source === 'i-studio') {");
+      L.push('      btn.disabled = false;');
+      L.push("      btn.dataset.ok = '1';");
+      L.push('    }');
+      L.push('  });');
+      L.push('');
+      L.push("  frame.addEventListener('load', function () {");
+      L.push("    if (frame.contentWindow) frame.contentWindow.postMessage({ type: 'captcha-height-request' }, CAP);");
+      L.push('  });');
+      L.push('');
+      L.push("  btn.addEventListener('click', function () {");
+      L.push("    if (!btn.dataset.ok) return;");
+      L.push('    ' + nav);
+      L.push('  });');
+      L.push('})();');
+      L.push('<\/script>');
+
+      out.textContent = L.join('\n');
+
+      pvb.textContent = text;
+      pv.style.width = width + 'px';
+      note.textContent = 'После прохождения кнопка «' + text + '» откроется.';
+    }
+
+    window.addEventListener('message', function (e) {
+      if (e.origin !== CAP) return;
+      var d = e.data || {};
+      if (d.type === 'captcha-resize') pv.style.height = d.height + 'px';
+      if (d.type === 'captcha-success' && d.source === 'i-studio') {
+        pvb.disabled = false;
+        pvb.dataset.ok = '1';
+      }
+    });
+    pv.addEventListener('load', function () {
+      if (pv.contentWindow) pv.contentWindow.postMessage({ type: 'captcha-height-request' }, CAP);
+    });
+    pvb.addEventListener('click', function () {
+      if (!pvb.dataset.ok) return;
+      note.textContent = 'Кнопка активна → откроется ' + target();
+    });
+
+    [t, u, nw, w].forEach(function (el) {
+      el.addEventListener('input', build);
+      el.addEventListener('change', build);
+    });
+    build();
+  })();
+  </script>
+</body>
+</html>
