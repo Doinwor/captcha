@@ -19,7 +19,12 @@
 
     html, body { height: 100%; }
 
-    /* transparent page: the card is the only thing painted, so it embeds cleanly in any iframe */
+    /* transparent page: the card is the only thing painted, so it embeds cleanly in any iframe.
+       ВАЖНО: фон прозрачный и на html, и на body. В браузере полотно вставленного
+       документа по умолчанию белое — если прозрачен только body, вокруг плашки видно
+       белый прямоугольник. Прозрачность на html убирает его. */
+    html { background: transparent; }
+
     body {
       background: transparent;
       display: flex;

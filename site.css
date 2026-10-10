@@ -505,13 +505,8 @@ footer.site a:hover { color: var(--ink); }
   color: var(--ink);
 }
 
-.captcha-slot {
-  margin: 26px 0;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--panel);
-}
+/* капча прозрачная — не обрамляем её панелью, иначе вокруг плашки видно белый прямоугольник */
+.captcha-slot { margin: 26px 0; }
 
 .captcha-slot iframe {
   display: block;
@@ -520,6 +515,13 @@ footer.site a:hover { color: var(--ink); }
   border: 0;
   background: transparent;
 }
+
+/* ── живые примеры (страница «Примеры») ── */
+.demo { margin: 16px 0 4px; padding: 16px; border: 1px dashed var(--line-strong); border-radius: 14px; }
+.demo iframe { display: block; width: 100%; height: 180px; border: 0; background: transparent; }
+.demo--dark { background: #0d0d14; border-color: #2a2a36; }
+.demo__caption { font-size: 12.5px; color: var(--dim); margin-top: 10px; }
+.demo__row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
 
 .form__foot { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 22px; }
 .form__note { font-size: 13px; color: var(--muted); }

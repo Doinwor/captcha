@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Принцип работы — і. капча</title>
+  <meta name="description" content="Как устроена капча: изолированный iframe, два уровня проверки, авто-высота и captcha-success через postMessage.">
+  <script>try{var t=localStorage.getItem('cap-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="official.html">і<span class="tri-text">.</span>&nbsp;капча<span class="tag">docs</span></a>
+      <nav class="nav__links">
+        <a href="official.html">Обзор</a>
+        <a href="install.html">Установка</a>
+        <a href="how.html">Принцип</a>
+        <a href="events.html">События</a>
+        <a href="examples.html">Примеры</a>
+        <a href="security.html">Безопасность</a>
+        <a class="nav__gh" href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему"><span class="theme-toggle__knob"></span></button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <span class="badge">как это устроено</span>
+      <h1>Принцип работы</h1>
+      <p class="lead">
+        Капча — это отдельный виджет на&nbsp;своём адресе. Ваш сайт показывает её внутри себя как окошко
+        и&nbsp;получает от&nbsp;неё только два сигнала: <strong>свою высоту</strong> и&nbsp;<strong>«проверка пройдена»</strong>.
+        Ниже — что происходит между этими двумя событиями.
+      </p>
+
+      <section>
+        <div class="eyebrow">Коротко</div>
+        <div class="grid grid--3">
+          <div class="card"><b>1 · Окошко</b><span>Вы вставляете <code>&lt;iframe&gt;</code> с адресом капчи на&nbsp;свою страницу</span></div>
+          <div class="card"><b>2 · Проверка</b><span>Человек проходит два уровня внутри этого окошка</span></div>
+          <div class="card"><b>3 · Сигнал</b><span>Капча присылает <code>captcha-success</code>, вы включаете кнопку</span></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">По шагам</div>
+        <h2>Что происходит по&nbsp;порядку</h2>
+
+        <div class="step">
+          <div class="step__h"><span class="step__num">1</span><h3>Ваша страница вставляет окошко</h3></div>
+          <p>
+            Вы добавляете в&nbsp;HTML тег <code>&lt;iframe&gt;</code> с&nbsp;адресом капчи. Ширину задаёте сами,
+            высоту не&nbsp;трогаете — капча сообщит её сама.
+          </p>
+        </div>
+
+        <div class="step">
+          <div class="step__h"><span class="step__num">2</span><h3>Браузер грузит капчу отдельно</h3></div>
+          <p>
+            <code>&lt;iframe&gt;</code> — это как отдельная вкладка внутри вашей страницы: у&nbsp;неё свой origin,
+            свои стили и&nbsp;скрипты. Поэтому капча <strong>не&nbsp;конфликтует</strong> с&nbsp;вашим CSS и&nbsp;JS,
+            и&nbsp;наоборот — ваша страница не&nbsp;мешает ей.
+          </p>
+        </div>
+
+        <div class="step">
+          <div class="step__h"><span class="step__num">3</span><h3>Капча сообщает свою высоту</h3></div>
+          <p>
+            Капча понимает, что она внутри окошка, и&nbsp;присылает сообщение <code>captcha-resize</code> с&nbsp;полем
+            <code>height</code>. Ваш скрипт подгоняет высоту <code>&lt;iframe&gt;</code>, чтобы не&nbsp;было лишних полос прокрутки.
+          </p>
+        </div>
+
+        <div class="step">
+          <div class="step__h"><span class="step__num">4</span><h3>Человек проходит проверку</h3></div>
+          <p>
+            Сначала первый уровень — ввести код (или посчитать пример) с&nbsp;картинки. Затем второй —
+            отметить на&nbsp;наборе плиток все буквы, фигуры или смайлики по&nbsp;заданию.
+          </p>
+        </div>
+
+        <div class="step">
+          <div class="step__h"><span class="step__num">5</span><h3>Капча присылает успех</h3></div>
+          <p>
+            Как только оба уровня пройдены, капча отправляет сообщение
+            <code>captcha-success</code> с&nbsp;полем <code>source: 'i-studio'</code>.
+          </p>
+        </div>
+
+        <div class="step">
+          <div class="step__h"><span class="step__num">6</span><h3>Ваш скрипт снимает блокировку</h3></div>
+          <p>
+            Обработчик, <strong>сверив источник</strong> (<code>e.origin</code>), убирает у&nbsp;кнопки атрибут
+            <code>disabled</code> — кнопка становится активной. Ничего вручную нажимать не&nbsp;надо.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">Обмен сообщениями</div>
+        <h2>Что летит между окном и&nbsp;страницей</h2>
+        <p>Общение идёт через <code>postMessage</code>. Вот весь контракт — больше ничего не&nbsp;передаётся.</p>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span class="codeblock__label">captcha → страница</span><button class="copy-btn" type="button">копировать</button></div>
+          <pre><code>{ <span class="at">type</span>: <span class="st">'captcha-resize'</span>, <span class="at">height</span>: 168 }
+{ <span class="at">type</span>: <span class="st">'captcha-success'</span>, <span class="at">source</span>: <span class="st">'i-studio'</span> }</code></pre>
+        </div>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span class="codeblock__label">страница → captcha</span><button class="copy-btn" type="button">копировать</button></div>
+          <pre><code>{ <span class="at">type</span>: <span class="st">'captcha-height-request'</span> }   <span class="cm">// попросить высоту ещё раз</span></code></pre>
+        </div>
+        <p>Подробный разбор полей — на&nbsp;странице <a class="link" href="events.html">События</a>.</p>
+      </section>
+
+      <section>
+        <div class="eyebrow">Два уровня</div>
+        <h2>Как проходит проверка</h2>
+        <div class="grid grid--2">
+          <div class="card"><b>Уровень 1 — пример на картинке</b><span>Простой код или арифметика на&nbsp;canvas. Ответ вводится в&nbsp;строку. До&nbsp;5&nbsp;попыток.</span></div>
+          <div class="card"><b>Уровень 2 — задание с плитками</b><span>Нужно отметить все буквы, фигуры или смайлики по&nbsp;условию. До&nbsp;3&nbsp;попыток.</span></div>
+        </div>
+        <div class="callout" style="margin-top:22px">
+          <b>Скрытая защита</b>
+          <p>
+            Помимо заданий, внутри работают ловушки (невидимые поля и&nbsp;чекбоксы), проверка времени ответа
+            и&nbsp;поведения мыши. Совсем без действий или «мгновенно» — это провал, а&nbsp;не&nbsp;успех.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">Изоляция</div>
+        <h2>Что ваш сайт знает, а&nbsp;что&nbsp;— нет</h2>
+        <ul class="plain">
+          <li><strong>Знает:</strong> высоту окошка и&nbsp;факт прохождения проверки — и&nbsp;ничего больше.</li>
+          <li><strong>Не&nbsp;видит:</strong> содержимое капчи. Из-за разных origin прочитать или изменить его из вашей страницы нельзя.</li>
+          <li><strong>Не&nbsp;зависит</strong> от ваших стилей: капчу нельзя «сломать» своим CSS или скриптами.</li>
+          <li><strong>Обновляется централизованно</strong> на&nbsp;своём адресе — вам не&nbsp;нужно ничего перевставлять.</li>
+        </ul>
+      </section>
+
+      <section>
+        <div class="eyebrow">Дальше</div>
+        <h2>Готовые примеры</h2>
+        <p>Посмотрите, как это выглядит в&nbsp;коде и&nbsp;живьём.</p>
+        <div class="btn-row">
+          <a class="btn btn--tri" href="examples.html">Примеры</a>
+          <a class="btn" href="install.html">Установка</a>
+          <a class="btn" href="events.html">События</a>
+        </div>
+      </section>
+
+      <nav class="pager">
+        <a href="install.html">← Установка</a>
+        <a class="next" href="events.html">События →</a>
+      </nav>
+    </div>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <span>і.&nbsp;капча · студия і. · 2026</span>
+      <span>
+        <a href="official.html">Обзор</a> ·
+        <a href="install.html">Установка</a> ·
+        <a href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a> ·
+        <a href="https://doinwor.github.io/go-ecosystem/" target="_blank" rel="noopener">GO</a>
+      </span>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
+</body>
+</html>
