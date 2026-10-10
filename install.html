@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Установка — і. капча</title>
+  <meta name="description" content="Пошаговая инструкция: как вставить капчу на сайт через iframe и привязать кнопку, которая разблокируется после прохождения.">
+  <script>try{var t=localStorage.getItem('cap-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="official.html">і<span class="tri-text">.</span>&nbsp;капча<span class="tag">docs</span></a>
+      <nav class="nav__links">
+        <a href="official.html">Обзор</a>
+        <a href="install.html">Установка</a>
+        <a href="events.html">События</a>
+        <a href="security.html">Безопасность</a>
+        <a class="nav__gh" href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему"><span class="theme-toggle__knob"></span></button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <span class="badge">инструкция</span>
+      <h1>Установка</h1>
+      <p class="lead">
+        Капча не&nbsp;копируется к&nbsp;вам в&nbsp;код — она остаётся на&nbsp;своём адресе
+        <code>https://doinwor.github.io/captcha/</code>, а&nbsp;вы показываете её через
+        <code>&lt;iframe&gt;</code> и&nbsp;ловите сообщение о&nbsp;прохождении.
+        Ниже — что и&nbsp;куда вставлять, по&nbsp;шагам, с&nbsp;готовым примером.
+      </p>
+
+      <div class="step">
+        <div class="step__h"><span class="step__num">1</span><h3>Куда вставлять код</h3></div>
+        <p>
+          Весь код идёт в&nbsp;<strong>HTML той страницы</strong>, где находится ваша форма или кнопка входа
+          (например <code>signup.html</code>) — внутрь тега <code>&lt;body&gt;</code>, в&nbsp;том месте,
+          где капча должна появиться. Никаких файлов к&nbsp;себе копировать не&nbsp;нужно, только три вставки ниже.
+        </p>
+      </div>
+
+      <div class="step">
+        <div class="step__h"><span class="step__num">2</span><h3>Вставьте окошко капчи</h3></div>
+        <p>
+          Это <code>&lt;iframe&gt;</code> с&nbsp;адресом капчи. Задайте ширину через <code>width</code>
+          (например <code>500</code>). <strong>Высоту не&nbsp;трогайте</strong> — капча пришлёт её сама.
+          Атрибут <code>sandbox</code> оставьте как есть: он&nbsp;разрешает капче работать, но&nbsp;изолирует её от&nbsp;вашей страницы.
+        </p>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span class="codeblock__label">HTML</span><button class="copy-btn" type="button">копировать</button></div>
+          <pre><code><span class="tg">&lt;iframe</span> <span class="at">id</span>=<span class="st">"cap"</span>
+        <span class="at">src</span>=<span class="st">"https://doinwor.github.io/captcha/"</span>
+        <span class="at">width</span>=<span class="st">"500"</span> <span class="at">height</span>=<span class="st">"180"</span>
+        <span class="at">style</span>=<span class="st">"border:0;background:transparent"</span>
+        <span class="at">sandbox</span>=<span class="st">"allow-scripts allow-same-origin allow-forms"</span><span class="tg">&gt;&lt;/iframe&gt;</span></code></pre>
+        </div>
+        <div class="callout">
+          <b>Почему <code>background:transparent</code></b>
+          <p>Капча прозрачная: видно только плашку, а фон вашего сайта просвечивает. Если рамка не&nbsp;нужна, ничего больше не&nbsp;добавляйте.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step__h"><span class="step__num">3</span><h3>Добавьте кнопку</h3></div>
+        <p>
+          Кнопка, которая должна <strong>разблокироваться после прохождения капчи</strong>, создаётся
+          с&nbsp;атрибутом <code>disabled</code> — то&nbsp;есть неактивной. Например, это кнопка «Отправить» или «Продолжить».
+        </p>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span class="codeblock__label">HTML</span><button class="copy-btn" type="button">копировать</button></div>
+          <pre><code><span class="tg">&lt;button</span> <span class="at">id</span>=<span class="st">"go"</span> <span class="at">type</span>=<span class="st">"submit"</span> <span class="at">disabled</span><span class="tg">&gt;</span>Отправить<span class="tg">&lt;/button&gt;</span></code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step__h"><span class="step__num">4</span><h3>Свяжите кнопку с&nbsp;капчей</h3></div>
+        <p>
+          Добавьте скрипт <strong>до закрывающего <code>&lt;/body&gt;</code></strong>. Он&nbsp;слушает сообщения
+          от&nbsp;капчи: подгоняет высоту окошка и&nbsp;включает кнопку, когда проверка пройдена.
+          Обязательно сверяйте <code>e.origin</code> — так чужой сайт не&nbsp;сможет подделать сигнал.
+        </p>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span class="codeblock__label">JavaScript</span><button class="copy-btn" type="button">копировать</button></div>
+          <pre><code><span class="kw">var</span> cap = document.<span class="kw">getElementById</span>(<span class="st">'cap'</span>);
+<span class="kw">var</span> go  = document.<span class="kw">getElementById</span>(<span class="st">'go'</span>);
+<span class="kw">var</span> OK  = <span class="st">'https://doinwor.github.io'</span>;   <span class="cm">// где живёт капча</span>
+
+window.<span class="kw">addEventListener</span>(<span class="st">'message'</span>, <span class="kw">function</span> (e) {
+  <span class="kw">if</span> (e.origin !== OK) <span class="kw">return</span>;            <span class="cm">// проверяем источник</span>
+  <span class="kw">var</span> d = e.data || {};
+
+  <span class="kw">if</span> (d.type === <span class="st">'captcha-resize'</span>)        <span class="cm">// капча сообщает высоту</span>
+    cap.style.height = d.height + <span class="st">'px'</span>;
+
+  <span class="kw">if</span> (d.type === <span class="st">'captcha-success'</span>)       <span class="cm">// проверка пройдена</span>
+    go.disabled = <span class="kw">false</span>;
+});</code></pre>
+        </div>
+        <div class="callout">
+          <b>Кнопка разблокируется сама</b>
+          <p>Как только человек пройдёт оба этапа, капча отправит <code>captcha-success</code>, и&nbsp;скрипт снимет <code>disabled</code> — кнопка станет активной. Ничего нажимать вручную не&nbsp;нужно.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step__h"><span class="step__num">5</span><h3>Полный пример</h3></div>
+        <p>Скопируйте целиком — это рабочая страница с&nbsp;формой, капчей и&nbsp;кнопкой, которая ждёт прохождения.</p>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span class="codeblock__label">signup.html</span><button class="copy-btn" type="button">копировать</button></div>
+          <pre><code><span class="tg">&lt;!DOCTYPE html&gt;</span>
+<span class="tg">&lt;html</span> <span class="at">lang</span>=<span class="st">"ru"</span><span class="tg">&gt;</span>
+<span class="tg">&lt;head&gt;</span>
+  <span class="tg">&lt;meta</span> <span class="at">charset</span>=<span class="st">"UTF-8"</span><span class="tg">&gt;</span>
+  <span class="tg">&lt;title&gt;</span>Форма с капчей<span class="tg">&lt;/title&gt;</span>
+<span class="tg">&lt;/head&gt;</span>
+<span class="tg">&lt;body&gt;</span>
+
+  <span class="tg">&lt;form</span> <span class="at">id</span>=<span class="st">"signup"</span><span class="tg">&gt;</span>
+    <span class="tg">&lt;input</span> <span class="at">type</span>=<span class="st">"email"</span> <span class="at">placeholder</span>=<span class="st">"Email"</span> <span class="at">required</span><span class="tg">&gt;</span>
+
+    <span class="cm">&lt;!-- 1. окошко капчи --&gt;</span>
+    <span class="tg">&lt;div&gt;</span>
+      <span class="tg">&lt;iframe</span> <span class="at">id</span>=<span class="st">"cap"</span>
+              <span class="at">src</span>=<span class="st">"https://doinwor.github.io/captcha/"</span>
+              <span class="at">width</span>=<span class="st">"500"</span> <span class="at">height</span>=<span class="st">"180"</span>
+              <span class="at">style</span>=<span class="st">"border:0;background:transparent"</span>
+              <span class="at">sandbox</span>=<span class="st">"allow-scripts allow-same-origin allow-forms"</span><span class="tg">&gt;&lt;/iframe&gt;</span>
+    <span class="tg">&lt;/div&gt;</span>
+
+    <span class="cm">&lt;!-- 2. кнопка ждёт прохождения --&gt;</span>
+    <span class="tg">&lt;button</span> <span class="at">id</span>=<span class="st">"go"</span> <span class="at">type</span>=<span class="st">"submit"</span> <span class="at">disabled</span><span class="tg">&gt;</span>Отправить<span class="tg">&lt;/button&gt;</span>
+  <span class="tg">&lt;/form&gt;</span>
+
+  <span class="cm">&lt;!-- 3. связать кнопку с капчей --&gt;</span>
+  <span class="tg">&lt;script&gt;</span>
+    (<span class="kw">function</span> () {
+      <span class="kw">var</span> cap = document.<span class="kw">getElementById</span>(<span class="st">'cap'</span>);
+      <span class="kw">var</span> go  = document.<span class="kw">getElementById</span>(<span class="st">'go'</span>);
+      <span class="kw">var</span> OK  = <span class="st">'https://doinwor.github.io'</span>;
+
+      window.<span class="kw">addEventListener</span>(<span class="st">'message'</span>, <span class="kw">function</span> (e) {
+        <span class="kw">if</span> (e.origin !== OK) <span class="kw">return</span>;
+        <span class="kw">var</span> d = e.data || {};
+        <span class="kw">if</span> (d.type === <span class="st">'captcha-resize'</span> && d.height)
+          cap.style.height = d.height + <span class="st">'px'</span>;
+        <span class="kw">if</span> (d.type === <span class="st">'captcha-success'</span>)
+          go.disabled = <span class="kw">false</span>;
+      });
+
+      <span class="cm">// попросить высоту сразу после загрузки капчи</span>
+      cap.addEventListener(<span class="st">'load'</span>, <span class="kw">function</span> () {
+        cap.contentWindow.postMessage({ type: <span class="st">'captcha-height-request'</span> }, OK);
+      });
+    })();
+  <span class="tg">&lt;/script&gt;</span>
+
+<span class="tg">&lt;/body&gt;</span>
+<span class="tg">&lt;/html&gt;</span></code></pre>
+        </div>
+      </div>
+
+      <section>
+        <div class="eyebrow">Если что-то не работает</div>
+        <div class="callout">
+          <b>Кнопка остаётся серой</b>
+          <p>Проверьте, что <code>e.origin</code> совпадает с&nbsp;<code>https://doinwor.github.io</code> и&nbsp;что скрипт стоит после элементов с&nbsp;<code>id="cap"</code> и&nbsp;<code>id="go"</code>.</p>
+        </div>
+        <div class="callout">
+          <b>Окошко слишком высокое</b>
+          <p>Высота подгоняется сообщением <code>captcha-resize</code>. Обработчик должен быть подключён <strong>до</strong> загрузки капчи — как в&nbsp;примере выше.</p>
+        </div>
+        <div class="callout">
+          <b>Google Sites и конструкторы</b>
+          <p>Некоторые песочницы не&nbsp;пропускают <code>postMessage</code> наружу. Тогда надёжнее оставить кнопку внутри самой капчи.</p>
+        </div>
+      </section>
+
+      <nav class="pager">
+        <a href="official.html">← Обзор</a>
+        <a class="next" href="events.html">События →</a>
+      </nav>
+    </div>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <span>і.&nbsp;капча · студия і. · 2026</span>
+      <span>
+        <a href="official.html">Обзор</a> ·
+        <a href="events.html">События</a> ·
+        <a href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a> ·
+        <a href="https://doinwor.github.io/go-ecosystem/" target="_blank" rel="noopener">GO</a>
+      </span>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
+</body>
+</html>

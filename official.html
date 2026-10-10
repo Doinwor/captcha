@@ -3,601 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>і. капча — официальный сайт</title>
-  <meta name="description" content="і. капча — двухуровневая капча, которая вставляется на любой сайт одной прозрачной плашкой. Инструкция по установке, демо и события postMessage.">
+  <title>і. капча — документация</title>
+  <meta name="description" content="і. капча — двухуровневая капча, которая вставляется на любой сайт одной прозрачной плашкой. Документация, установка, события postMessage.">
+  <script>try{var t=localStorage.getItem('cap-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;500;700;900&display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    :root {
-      --bg: #ffffff;
-      --ink: #141414;
-      --muted: #7a7a85;
-      --dim: #9a9aa3;
-      --line: #ececf0;
-      --surface: #f7f7f9;
-      --tri1: #ffd400;
-      --tri2: #ff3b30;
-      --tri3: #34c759;
-      --tri: linear-gradient(100deg, var(--tri1), var(--tri2), var(--tri3), var(--tri1));
-      --ease: cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; scroll-behavior: smooth; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-      line-height: 1.5;
-    }
-
-    ::selection { background: #ffd400; color: #141414; }
-
-    a { color: inherit; }
-
-    @keyframes triShimmer {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 200% 50%; }
-    }
-
-    .tri-text {
-      background: var(--tri);
-      background-size: 220% 220%;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: triShimmer 7s linear infinite;
-    }
-
-    .wrap { max-width: 820px; margin: 0 auto; padding: 0 24px; }
-
-    /* ── nav ── */
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      backdrop-filter: saturate(180%) blur(12px);
-      background: rgba(255, 255, 255, 0.78);
-      border-bottom: 1px solid var(--line);
-    }
-
-    .nav {
-      max-width: 820px;
-      margin: 0 auto;
-      padding: 14px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-
-    .brand {
-      font-family: 'Unbounded', sans-serif;
-      font-weight: 800;
-      font-size: 16px;
-      letter-spacing: -0.02em;
-      display: flex;
-      align-items: baseline;
-      gap: 7px;
-    }
-
-    .brand .tag {
-      font-family: 'Unbounded', sans-serif;
-      font-weight: 300;
-      font-size: 8px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--dim);
-    }
-
-    .nav__links { display: flex; gap: 18px; align-items: center; }
-
-    .nav__links a {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--muted);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
-    .nav__links a:hover { color: var(--ink); }
-
-    @media (max-width: 620px) {
-      .nav__links a:not(.nav__gh) { display: none; }
-    }
-
-    /* ── hero ── */
-    .hero { padding: 72px 0 24px; }
-
-    .badge {
-      display: inline-block;
-      font-family: 'Unbounded', sans-serif;
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      padding: 6px 14px;
-      border-radius: 100px;
-      border: 1px solid var(--line);
-      margin-bottom: 22px;
-    }
-
-    h1 {
-      font-family: 'Unbounded', sans-serif;
-      font-size: clamp(30px, 6vw, 54px);
-      font-weight: 900;
-      letter-spacing: -0.03em;
-      line-height: 1.08;
-      margin-bottom: 20px;
-    }
-
-    .hero p {
-      font-size: 16px;
-      color: var(--muted);
-      max-width: 560px;
-      margin-bottom: 30px;
-    }
-
-    .cta { display: flex; flex-wrap: wrap; gap: 12px; }
-
-    .btn {
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 13px 24px;
-      border-radius: 100px;
-      border: 1px solid var(--line);
-      background: var(--surface);
-      color: var(--ink);
-      text-decoration: none;
-      cursor: pointer;
-      transition: border-color 0.2s, transform 0.25s var(--ease), background 0.2s;
-    }
-
-    .btn:hover { border-color: #d5d5dc; transform: translateY(-2px); }
-
-    .btn--tri {
-      border: none;
-      color: #141414;
-      background: var(--tri);
-      background-size: 220% 220%;
-      animation: triShimmer 7s linear infinite;
-      box-shadow: 0 14px 34px -16px rgba(255, 59, 48, 0.6);
-    }
-
-    .btn--tri:hover { box-shadow: 0 18px 40px -16px rgba(255, 59, 48, 0.75); }
-
-    section { padding: 44px 0; }
-
-    .eyebrow {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      color: var(--dim);
-      margin-bottom: 16px;
-    }
-
-    h2 {
-      font-family: 'Unbounded', sans-serif;
-      font-size: clamp(20px, 3.4vw, 30px);
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      margin-bottom: 14px;
-    }
-
-    section > .wrap > p { color: var(--muted); font-size: 15px; max-width: 640px; }
-
-    /* ── live demo plate ── */
-    .demo-card {
-      margin-top: 26px;
-      border-radius: 20px;
-      padding: 2px;
-      background: var(--tri);
-      background-size: 220% 220%;
-      animation: triShimmer 7s linear infinite;
-      box-shadow: 0 30px 70px -40px rgba(255, 59, 48, 0.55);
-    }
-
-    .demo-card__inner {
-      background: #fff;
-      border-radius: 18px;
-      padding: 26px;
-    }
-
-    .demo-card iframe {
-      display: block;
-      width: 100%;
-      height: 180px;
-      border: 0;
-      background: transparent;
-    }
-
-    .demo-actions {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .demo-status { font-size: 13px; color: var(--muted); }
-
-    .demo-btn {
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 12px 26px;
-      border: 0;
-      border-radius: 10px;
-      background: #141414;
-      color: #fff;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.2s var(--ease);
-    }
-
-    .demo-btn:disabled { background: #dcdce2; color: #9a9aa3; cursor: not-allowed; }
-    .demo-btn:not(:disabled):hover { transform: translateY(-2px); }
-
-    /* ── features ── */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-top: 26px;
-    }
-
-    @media (max-width: 700px) { .grid { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 440px) { .grid { grid-template-columns: 1fr; } }
-
-    .feat {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 20px;
-      transition: border-color 0.25s, transform 0.3s var(--ease);
-    }
-
-    .feat:hover { border-color: #d9d9e0; transform: translateY(-3px); }
-
-    .feat b { display: block; font-size: 14px; font-weight: 700; margin-bottom: 6px; }
-    .feat span { font-size: 13px; color: var(--muted); }
-
-    /* ── steps & code ── */
-    .step { margin-top: 30px; }
-
-    .step__num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: var(--tri);
-      background-size: 220% 220%;
-      animation: triShimmer 7s linear infinite;
-      color: #141414;
-      font-weight: 700;
-      font-size: 13px;
-      margin-right: 10px;
-      vertical-align: middle;
-    }
-
-    .step h3 {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-    }
-
-    .step p { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
-
-    .code {
-      position: relative;
-      background: #0f0f16;
-      border-radius: 14px;
-      padding: 18px 20px;
-      overflow-x: auto;
-    }
-
-    .code pre {
-      font-family: ui-monospace, 'SF Mono', Consolas, 'Liberation Mono', monospace;
-      font-size: 12.5px;
-      line-height: 1.7;
-      color: #d7d7e0;
-      white-space: pre;
-    }
-
-    .code .cm { color: #6b6b7b; }
-    .code .tg { color: #ff8f80; }
-    .code .at { color: #ffd479; }
-    .code .st { color: #86e39a; }
-    .code .kw { color: #c79bff; }
-
-    .copy-btn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      font-family: inherit;
-      font-size: 11px;
-      font-weight: 500;
-      color: #b9b9c6;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 8px;
-      padding: 6px 12px;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-    }
-
-    .copy-btn:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
-
-    /* ── events table ── */
-    .events { margin-top: 24px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
-
-    .events__row {
-      display: grid;
-      grid-template-columns: 200px 1fr;
-      gap: 16px;
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--line);
-      font-size: 13px;
-    }
-
-    .events__row:last-child { border-bottom: none; }
-
-    .events__code {
-      font-family: ui-monospace, Consolas, monospace;
-      font-size: 12.5px;
-      color: var(--ink);
-      font-weight: 600;
-    }
-
-    .events__desc { color: var(--muted); }
-
-    @media (max-width: 560px) {
-      .events__row { grid-template-columns: 1fr; gap: 4px; }
-    }
-
-    .note {
-      margin-top: 20px;
-      border-left: 3px solid;
-      border-image: var(--tri) 1;
-      padding: 4px 0 4px 16px;
-    }
-
-    .note + .note { margin-top: 16px; }
-    .note b { font-size: 13px; }
-    .note p { color: var(--muted); font-size: 13px; margin-top: 3px; }
-
-    /* ── footer ── */
-    footer {
-      border-top: 1px solid var(--line);
-      padding: 30px 0 50px;
-      font-size: 12px;
-      color: var(--dim);
-    }
-
-    footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-    footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
-    footer a:hover { color: var(--ink); }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation: none !important; transition-duration: 0.001ms !important; }
-      html { scroll-behavior: auto; }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
 </head>
 <body>
-  <header>
-    <div class="nav">
-      <div class="brand"><span>і<span class="tri-text">.</span> капча</span><span class="tag">студия і.</span></div>
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="official.html">і<span class="tri-text">.</span>&nbsp;капча<span class="tag">docs</span></a>
       <nav class="nav__links">
-        <a href="#demo">Демо</a>
-        <a href="#features">Возможности</a>
-        <a href="#install">Установка</a>
-        <a href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a>
+        <a href="official.html">Обзор</a>
+        <a href="install.html">Установка</a>
+        <a href="events.html">События</a>
+        <a href="security.html">Безопасность</a>
+        <a class="nav__gh" href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему"><span class="theme-toggle__knob"></span></button>
       </nav>
     </div>
   </header>
 
   <main>
-    <!-- HERO -->
-    <section class="hero">
-      <div class="wrap">
-        <div class="badge tri-text">двухуровневая капча</div>
-        <h1>Защита форм <span class="tri-text">одной плашкой</span></h1>
+    <div class="wrap">
+      <span class="badge">двухуровневая капча</span>
+      <h1>Защита форм<br><span class="tri-text">одной плашкой</span></h1>
+      <p class="lead">
+        і.&nbsp;капча живёт на&nbsp;отдельном адресе и&nbsp;вставляется на&nbsp;любой сайт через
+        <code>&lt;iframe&gt;</code>. Прозрачный фон, никаких обводок — на&nbsp;странице видно только саму плашку.
+      </p>
+      <div class="btn-row">
+        <a class="btn btn--tri" href="install.html">Как установить</a>
+        <a class="btn" href="events.html">События</a>
+        <a class="btn" href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">Код на GitHub</a>
+      </div>
+
+      <section>
+        <div class="eyebrow">Что это</div>
         <p>
-          і. капча живёт отдельно и вставляется на любой сайт одной ссылкой.
-          Прозрачный фон, никаких обводок — на странице видно только саму плашку.
+          <strong>і.&nbsp;капча</strong> — самостоятельный виджет. Ваш сайт не&nbsp;копирует её код, а&nbsp;показывает
+          её внутри себя как окошко. Поэтому капча не&nbsp;конфликтует со&nbsp;стилями и&nbsp;скриптами страницы,
+          а&nbsp;обновляется централизованно на&nbsp;своём адресе.
         </p>
-        <div class="cta">
-          <a class="btn btn--tri" href="#demo">Попробовать демо</a>
-          <a class="btn" href="#install">Как вставить</a>
-          <a class="btn" href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">Код на GitHub</a>
-        </div>
-      </div>
-    </section>
+        <p>
+          Проверка проходит в&nbsp;два этапа: сначала код или пример на&nbsp;картинке, затем «отметьте все буквы,
+          фигуры или смайлики». Плюс скрытые ловушки и&nbsp;поведенческий анализ — бот не&nbsp;пройдёт,
+          а&nbsp;человек даже не&nbsp;заметит.
+        </p>
+      </section>
 
-    <!-- DEMO -->
-    <section id="demo">
-      <div class="wrap">
-        <div class="eyebrow">Новое демо</div>
-        <h2>Живой пример вставки</h2>
-        <p>Это настоящая капча, встроенная через &lt;iframe&gt;. Пройдите её — кнопка станет активной.</p>
-
-        <div class="demo-card">
-          <div class="demo-card__inner">
-            <iframe id="demo-frame" src="index.html" title="Капча" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
-            <div class="demo-actions">
-              <button class="demo-btn" id="demo-btn" disabled>Продолжить →</button>
-              <span class="demo-status" id="demo-status">Пройдите капчу, чтобы активировать кнопку…</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- FEATURES -->
-    <section id="features">
-      <div class="wrap">
+      <section>
         <div class="eyebrow">Возможности</div>
-        <h2>Что внутри</h2>
-        <div class="grid">
-          <div class="feat"><b>Два уровня</b><span>Код или пример на canvas, затем задание с картинкой</span></div>
-          <div class="feat"><b>Одна плашка</b><span>Прозрачный фон, вставляется как есть</span></div>
-          <div class="feat"><b>События наружу</b><span>postMessage: успех и авто-высота окна</span></div>
-          <div class="feat"><b>Анти-бот</b><span>Скрытые ловушки, тайминг и поведение мыши</span></div>
-          <div class="feat"><b>Жёсткий провал</b><span>Лимит попыток и полная блокировка</span></div>
-          <div class="feat"><b>Без зависимостей</b><span>Чистый HTML, CSS и JavaScript</span></div>
+        <div class="grid grid--3">
+          <div class="card"><b>Два уровня</b><span>Код или пример на&nbsp;canvas, затем задание с&nbsp;картинкой</span></div>
+          <div class="card"><b>Одна плашка</b><span>Прозрачный фон, вставляется как есть</span></div>
+          <div class="card"><b>События наружу</b><span>postMessage: успех и&nbsp;авто-высота окна</span></div>
+          <div class="card"><b>Анти-бот</b><span>Ловушки, тайминг и&nbsp;поведение мыши</span></div>
+          <div class="card"><b>Жёсткий провал</b><span>Лимит попыток и&nbsp;полная блокировка</span></div>
+          <div class="card"><b>Без зависимостей</b><span>Чистый HTML, CSS и&nbsp;JavaScript</span></div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- INSTALL -->
-    <section id="install">
-      <div class="wrap">
-        <div class="eyebrow">Установка</div>
-        <h2>Как вставить на сайт</h2>
-        <p>Три шага. Капча не&nbsp;копируется к&nbsp;вам в&nbsp;код — она остаётся на&nbsp;своём адресе, а&nbsp;вы показываете её через <code>&lt;iframe&gt;</code>.</p>
-
-        <div class="step">
-          <h3><span class="step__num">1</span> Вставьте окошко с капчей</h3>
-          <p>Задайте ширину через <code>width</code>. Высоту не&nbsp;трогайте — капча пришлёт её сама.</p>
-          <div class="code">
-            <button class="copy-btn" data-copy>копировать</button>
-            <pre id="code-iframe"><span class="tg">&lt;iframe</span> <span class="at">id</span>=<span class="st">"cap"</span>
-        <span class="at">src</span>=<span class="st">"https://doinwor.github.io/captcha/"</span>
+      <section>
+        <div class="eyebrow">Быстрый старт</div>
+        <h2>Три строки — и&nbsp;капча на&nbsp;странице</h2>
+        <p>Вставьте окошко, добавьте кнопку и&nbsp;свяжите их одним обработчиком сообщений.</p>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span class="codeblock__label">index.html</span><button class="copy-btn" type="button">копировать</button></div>
+          <pre><code><span class="cm">&lt;!-- 1. окошко капчи --&gt;</span>
+<span class="tg">&lt;iframe</span> <span class="at">id</span>=<span class="st">"cap"</span> <span class="at">src</span>=<span class="st">"https://doinwor.github.io/captcha/"</span>
         <span class="at">width</span>=<span class="st">"500"</span> <span class="at">height</span>=<span class="st">"180"</span>
         <span class="at">style</span>=<span class="st">"border:0;background:transparent"</span>
-        <span class="at">sandbox</span>=<span class="st">"allow-scripts allow-same-origin allow-forms"</span><span class="tg">&gt;&lt;/iframe&gt;</span></pre>
-          </div>
-        </div>
+        <span class="at">sandbox</span>=<span class="st">"allow-scripts allow-same-origin allow-forms"</span><span class="tg">&gt;&lt;/iframe&gt;</span>
 
-        <div class="step">
-          <h3><span class="step__num">2</span> Слушайте сообщения</h3>
-          <p>Когда пользователь пройдёт капчу, она пришлёт <code>captcha-success</code>. Тогда разблокируйте кнопку или отправьте форму.</p>
-          <div class="code">
-            <button class="copy-btn" data-copy>копировать</button>
-            <pre id="code-js"><span class="kw">var</span> EXPECTED = <span class="st">'https://doinwor.github.io'</span>;
+<span class="cm">&lt;!-- 2. кнопка, которая ждёт прохождения --&gt;</span>
+<span class="tg">&lt;button</span> <span class="at">id</span>=<span class="st">"go"</span> <span class="at">disabled</span><span class="tg">&gt;</span>Продолжить<span class="tg">&lt;/button&gt;</span>
 
-window.<span class="kw">addEventListener</span>(<span class="st">'message'</span>, <span class="kw">function</span> (e) {
-  <span class="cm">// обязательно проверяем источник</span>
-  <span class="kw">if</span> (e.origin !== EXPECTED) <span class="kw">return</span>;
+<span class="cm">&lt;!-- 3. связать кнопку с капчей --&gt;</span>
+<span class="tg">&lt;script&gt;</span>
+  window.<span class="kw">addEventListener</span>(<span class="st">'message'</span>, <span class="kw">function</span> (e) {
+    <span class="kw">if</span> (e.origin !== <span class="st">'https://doinwor.github.io'</span>) <span class="kw">return</span>;
+    <span class="kw">if</span> (e.data.type === <span class="st">'captcha-resize'</span>) cap.style.height = e.data.height + <span class="st">'px'</span>;
+    <span class="kw">if</span> (e.data.type === <span class="st">'captcha-success'</span>) go.disabled = <span class="kw">false</span>;
+  });
+<span class="tg">&lt;/script&gt;</span></code></pre>
+        </div>
+        <p><a class="link" href="install.html">Полная инструкция с&nbsp;разбором каждого шага →</a></p>
+      </section>
 
-  <span class="cm">// капча сообщает свою высоту — подгоняем iframe</span>
-  <span class="kw">if</span> (e.data.type === <span class="st">'captcha-resize'</span>) {
-    document.<span class="kw">getElementById</span>(<span class="st">'cap'</span>).style.height = e.data.height + <span class="st">'px'</span>;
-  }
-
-  <span class="cm">// капча пройдена</span>
-  <span class="kw">if</span> (e.data.type === <span class="st">'captcha-success'</span>) {
-    document.<span class="kw">getElementById</span>(<span class="st">'go'</span>).disabled = <span class="kw">false</span>;
-  }
-});</pre>
-          </div>
+      <section>
+        <div class="eyebrow">Документация</div>
+        <div class="grid grid--3">
+          <a class="ncard ncard--tri" href="install.html">
+            <div class="ncard__t">Установка <span class="ncard__arrow">→</span></div>
+            <div class="ncard__d">Куда вставлять код, как привязать кнопку, полный пример</div>
+          </a>
+          <a class="ncard" href="events.html">
+            <div class="ncard__t">События <span class="ncard__arrow">→</span></div>
+            <div class="ncard__d">postMessage: успех, авто-высота, запрос высоты</div>
+          </a>
+          <a class="ncard" href="security.html">
+            <div class="ncard__t">Безопасность <span class="ncard__arrow">→</span></div>
+            <div class="ncard__d">origin, sandbox и серверная валидация</div>
+          </a>
         </div>
-
-        <div class="step">
-          <h3><span class="step__num">3</span> Готово</h3>
-          <p>Капча адаптивная: подстроится под ширину окошка. Цвет, размер и положение задаёт ваша страница — сама плашка нейтральная.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- EVENTS -->
-    <section id="events">
-      <div class="wrap">
-        <div class="eyebrow">События</div>
-        <h2>Что присылает капча</h2>
-        <div class="events">
-          <div class="events__row">
-            <div class="events__code">captcha-resize</div>
-            <div class="events__desc">Своя высота в пикселях (<code>height</code>) — чтобы обрезать iframe ровно по плашке.</div>
-          </div>
-          <div class="events__row">
-            <div class="events__code">captcha-success</div>
-            <div class="events__desc">Пользователь прошёл проверку. Можно разблокировать кнопку или отправить форму.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- NOTES -->
-    <section id="notes">
-      <div class="wrap">
-        <div class="eyebrow">Важно</div>
-        <h2>Заметки</h2>
-        <div class="note">
-          <b>Проверяйте origin</b>
-          <p>В слушателе сравнивайте <code>e.origin</code> с <code>https://doinwor.github.io</code>, а не со звёздочкой — иначе чужой сайт сможет подделать сигнал.</p>
-        </div>
-        <div class="note">
-          <b>Google Sites и конструкторы</b>
-          <p>Некоторые песочницы не пропускают postMessage наружу. Тогда надёжнее держать кнопку «Продолжить» внутри самой капчи.</p>
-        </div>
-        <div class="note">
-          <b>Полностью клиентская проверка</b>
-          <p>Сейчас вся проверка идёт в браузере. Для защиты от серьёзных ботов на сервере нужна собственная валидация токена.</p>
-        </div>
-      </div>
-    </section>
+      </section>
+    </div>
   </main>
 
-  <footer>
+  <footer class="site">
     <div class="wrap">
-      <span>і. капча · студия і. · 2026</span>
+      <span>і.&nbsp;капча · студия і. · 2026</span>
       <span>
-        <a href="index.html">Демо</a> ·
+        <a href="install.html">Установка</a> ·
+        <a href="events.html">События</a> ·
         <a href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a> ·
-        <a href="https://doinwor.github.io/go-ecosystem/">GO</a>
+        <a href="https://doinwor.github.io/go-ecosystem/" target="_blank" rel="noopener">GO</a>
       </span>
     </div>
   </footer>
 
-  <script>
-    (function () {
-      var EXPECTED = 'https://doinwor.github.io';
-      var frame = document.getElementById('demo-frame');
-      var btn = document.getElementById('demo-btn');
-      var status = document.getElementById('demo-status');
-
-      window.addEventListener('message', function (e) {
-        if (e.origin !== EXPECTED && e.origin !== 'null' && e.origin !== 'file://') return;
-        if (e.data && e.data.type === 'captcha-resize' && e.data.height) {
-          frame.style.height = Math.max(120, Math.min(500, e.data.height)) + 'px';
-        }
-        if (e.data && e.data.type === 'captcha-success') {
-          btn.disabled = false;
-          status.textContent = 'Капча пройдена — кнопка активна.';
-        }
-      });
-
-      frame.addEventListener('load', function () {
-        try { frame.contentWindow.postMessage({ type: 'captcha-height-request' }, '*'); } catch (err) {}
-      });
-
-      btn.addEventListener('click', function () {
-        status.textContent = 'Готово! Здесь ваш следующий шаг.';
-      });
-
-      // copy buttons
-      document.querySelectorAll('[data-copy]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          var pre = b.parentElement.querySelector('pre');
-          if (!pre) return;
-          navigator.clipboard.writeText(pre.textContent).then(function () {
-            b.textContent = 'скопировано';
-            setTimeout(function () { b.textContent = 'копировать'; }, 1400);
-          });
-        });
-      });
-    })();
-  </script>
+  <script src="site.js"></script>
 </body>
 </html>

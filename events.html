@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>События — і. капча</title>
+  <meta name="description" content="События postMessage капчи: captcha-resize, captcha-success и captcha-height-request.">
+  <script>try{var t=localStorage.getItem('cap-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="official.html">і<span class="tri-text">.</span>&nbsp;капча<span class="tag">docs</span></a>
+      <nav class="nav__links">
+        <a href="official.html">Обзор</a>
+        <a href="install.html">Установка</a>
+        <a href="events.html">События</a>
+        <a href="security.html">Безопасность</a>
+        <a class="nav__gh" href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему"><span class="theme-toggle__knob"></span></button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <span class="badge">postMessage</span>
+      <h1>События</h1>
+      <p class="lead">
+        Капча общается с&nbsp;вашим сайтом через <code>postMessage</code>. Ваш сайт слушает сообщения,
+        подгоняет высоту окошка и&nbsp;узнаёт, когда проверка пройдена.
+      </p>
+
+      <section>
+        <h2>От капчи к&nbsp;вашему сайту</h2>
+        <p>Эти сообщения приходят в&nbsp;обработчик <code>window.addEventListener('message', …)</code>. У&nbsp;каждого поля есть <code>type</code>.</p>
+        <div class="table">
+          <div class="table__row">
+            <div class="table__k">captcha-resize</div>
+            <div class="table__v">Своя высота в&nbsp;пикселях в&nbsp;поле <code>height</code> — чтобы обрезать <code>&lt;iframe&gt;</code> ровно по&nbsp;плашке.</div>
+          </div>
+          <div class="table__row">
+            <div class="table__k">captcha-success</div>
+            <div class="table__v">Пользователь прошёл проверку. Поле <code>source</code> равно <code>i-studio</code>. Можно включать кнопку или отправлять форму.</div>
+          </div>
+        </div>
+
+        <p style="margin-top:20px"><b>Пример данных:</b></p>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span class="codeblock__label">message.data</span><button class="copy-btn" type="button">копировать</button></div>
+          <pre><code>{ <span class="at">type</span>: <span class="st">'captcha-resize'</span>, <span class="at">height</span>: 168 }
+{ <span class="at">type</span>: <span class="st">'captcha-success'</span>, <span class="at">source</span>: <span class="st">'i-studio'</span> }</code></pre>
+        </div>
+      </section>
+
+      <section>
+        <h2>От вашего сайта к&nbsp;капче</h2>
+        <p>
+          Если капча долго грузится, можно <strong>попросить</strong> у&nbsp;неё высоту повторно — сразу после загрузки
+          окошка. Это необязательно, но полезно, если вы подключаете слушатель позже.
+        </p>
+        <div class="table">
+          <div class="table__row">
+            <div class="table__k">captcha-height-request</div>
+            <div class="table__v">Отправляется в&nbsp;окошко капчи. В&nbsp;ответ придёт <code>captcha-resize</code> с&nbsp;актуальной высотой.</div>
+          </div>
+        </div>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span class="codeblock__label">JavaScript</span><button class="copy-btn" type="button">копировать</button></div>
+          <pre><code>cap.addEventListener(<span class="st">'load'</span>, <span class="kw">function</span> () {
+  cap.contentWindow.postMessage(
+    { <span class="at">type</span>: <span class="st">'captcha-height-request'</span> },
+    <span class="st">'https://doinwor.github.io'</span>
+  );
+});</code></pre>
+        </div>
+      </section>
+
+      <section>
+        <h2>Полный обработчик</h2>
+        <p>Собираем всё вместе: проверка источника, авто-высота и&nbsp;разблокировка кнопки.</p>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span class="codeblock__label">JavaScript</span><button class="copy-btn" type="button">копировать</button></div>
+          <pre><code><span class="kw">var</span> OK = <span class="st">'https://doinwor.github.io'</span>;
+
+window.<span class="kw">addEventListener</span>(<span class="st">'message'</span>, <span class="kw">function</span> (e) {
+  <span class="kw">if</span> (e.origin !== OK) <span class="kw">return</span>;        <span class="cm">// чужой источник — игнор</span>
+  <span class="kw">var</span> d = e.data;
+  <span class="kw">if</span> (!d || !d.type) <span class="kw">return</span>;
+
+  <span class="kw">if</span> (d.type === <span class="st">'captcha-resize'</span>) {
+    cap.style.height = d.height + <span class="st">'px'</span>;
+  }
+
+  <span class="kw">if</span> (d.type === <span class="st">'captcha-success'</span>) {
+    go.disabled = <span class="kw">false</span>;
+    <span class="cm">// при необходимости: signup.submit();</span>
+  }
+});</code></pre>
+        </div>
+      </section>
+
+      <nav class="pager">
+        <a href="install.html">← Установка</a>
+        <a class="next" href="security.html">Безопасность →</a>
+      </nav>
+    </div>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <span>і.&nbsp;капча · студия і. · 2026</span>
+      <span>
+        <a href="official.html">Обзор</a> ·
+        <a href="install.html">Установка</a> ·
+        <a href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a> ·
+        <a href="https://doinwor.github.io/go-ecosystem/" target="_blank" rel="noopener">GO</a>
+      </span>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
+</body>
+</html>

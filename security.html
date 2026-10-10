@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Безопасность — і. капча</title>
+  <meta name="description" content="Проверка origin, sandbox, анти-бот защита и серверная валидация для капчи.">
+  <script>try{var t=localStorage.getItem('cap-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="official.html">і<span class="tri-text">.</span>&nbsp;капча<span class="tag">docs</span></a>
+      <nav class="nav__links">
+        <a href="official.html">Обзор</a>
+        <a href="install.html">Установка</a>
+        <a href="events.html">События</a>
+        <a href="security.html">Безопасность</a>
+        <a class="nav__gh" href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему"><span class="theme-toggle__knob"></span></button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <span class="badge">безопасность</span>
+      <h1>Безопасность</h1>
+      <p class="lead">
+        Капча изолирована от&nbsp;вашей страницы и&nbsp;общается только проверенными сообщениями.
+        Ниже — что важно знать, чтобы встраивание было безопасным.
+      </p>
+
+      <section>
+        <h2>Проверяйте origin</h2>
+        <p>
+          В&nbsp;обработчике всегда сравнивайте <code>e.origin</code> с&nbsp;адресом капчи
+          (<code>https://doinwor.github.io</code>). Иначе любой другой сайт сможет отправить вашей странице
+          поддельное <code>captcha-success</code>. Никогда не&nbsp;используйте <code>'*'</code> в&nbsp;проверке.
+        </p>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span class="codeblock__label">JavaScript</span><button class="copy-btn" type="button">копировать</button></div>
+          <pre><code><span class="kw">if</span> (e.origin !== <span class="st">'https://doinwor.github.io'</span>) <span class="kw">return</span>;</code></pre>
+        </div>
+      </section>
+
+      <section>
+        <h2>sandbox и изоляция</h2>
+        <p>
+          Окошко капчи вставляется с&nbsp;атрибутом <code>sandbox="allow-scripts allow-same-origin allow-forms"</code>.
+          Это даёт капче работать, но&nbsp;не&nbsp;пускает её в&nbsp;остальную часть страницы. Не&nbsp;убирайте
+          <code>allow-scripts</code> и&nbsp;<code>allow-same-origin</code> — без них капча не&nbsp;запустится.
+        </p>
+      </section>
+
+      <section>
+        <h2>Анти-бот внутри капчи</h2>
+        <p>Защита работает уже в&nbsp;самой капче — от&nbsp;вас ничего дополнительного не&nbsp;требуется.</p>
+        <div class="grid grid--3">
+          <div class="card"><b>Ловушки</b><span>Скрытые поля и&nbsp;чекбоксы, которые человек не&nbsp;видит</span></div>
+          <div class="card"><b>Поведение</b><span>Движение мыши, клавиатура и&nbsp;время ответа</span></div>
+          <div class="card"><b>Лимит попыток</b><span>5&nbsp;ошибок на&nbsp;первом этапе, 3&nbsp;— на&nbsp;втором</span></div>
+        </div>
+        <div class="callout" style="margin-top:22px">
+          <b>Жёсткий провал</b>
+          <p>После лимита ошибок или срабатывания ловушки капча блокируется полностью: красная точка, все элементы неактивны. Сброс — только перезагрузка страницы.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Проверка сейчас клиентская</h2>
+        <p>
+          Всё, что происходит при прохождении, вычисляется в&nbsp;браузере. Это удобно и&nbsp;быстро,
+          но&nbsp;для защиты от&nbsp;серьёзных ботов нужна <strong>серверная валидация</strong>.
+        </p>
+        <div class="callout">
+          <b>Как усилить</b>
+          <p>На&nbsp;сообщение <code>captcha-success</code> ваш фронтенд может запросить у&nbsp;капчи токен и&nbsp;отправить его на&nbsp;ваш сервер (Cloudflare Workers, Vercel или Netlify Functions), а&nbsp;сервер проверит его и&nbsp;только тогда примет форму.</p>
+        </div>
+      </section>
+
+      <nav class="pager">
+        <a href="events.html">← События</a>
+        <a class="next" href="official.html">Обзор →</a>
+      </nav>
+    </div>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <span>і.&nbsp;капча · студия і. · 2026</span>
+      <span>
+        <a href="official.html">Обзор</a> ·
+        <a href="install.html">Установка</a> ·
+        <a href="https://github.com/Doinwor/captcha" target="_blank" rel="noopener">GitHub</a> ·
+        <a href="https://doinwor.github.io/go-ecosystem/" target="_blank" rel="noopener">GO</a>
+      </span>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
+</body>
+</html>
