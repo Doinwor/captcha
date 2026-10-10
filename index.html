@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>і. капча</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --ink: #141414;
+      --muted: #9a9a9a;
+      --line: #e7e7e7;
+      --accent: #5be37b;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      color: var(--ink);
+    }
+
+    /* ── card: fixed footprint, stages are stacked in the same cell ── */
+    .captcha {
+      position: relative;
+      width: min(480px, 94vw);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 14px 40px -28px rgba(0, 0, 0, 0.35);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      overflow: hidden;
+      transition: border-color 0.25s;
+    }
+    .captcha.ok { border-color: #a6e3bd; }
+    .captcha.bad { border-color: #f0b4bf; }
+
+    .stage {
+      grid-area: 1 / 1;
+      min-width: 0;
+      padding: 12px 12px 22px;
+      transition: opacity 0.28s ease;
+    }
+    .stage[data-off] { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    /* ── stage 1: single-line strip ── */
+    .stage--1 { display: flex; align-items: center; }
+
+    .strip {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 7px;
+      width: 100%;
+      padding-right: 20px;
+    }
+
+    .brand { display: flex; align-items: baseline; gap: 5px; flex: none; padding-right: 2px; }
+
+    .brand__mark {
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    .brand__mark .dot { color: var(--accent); }
+
+    .brand__name {
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 300;
+      font-size: 8px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    #cv {
+      flex: none;
+      width: 156px;
+      height: 46px;
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #eef1f8;
+      cursor: pointer;
+    }
+
+    input[type=text] {
+      flex: 1 1 62px;
+      min-width: 0;
+      height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 0 8px;
+      font-family: inherit;
+      font-size: 15px;
+      letter-spacing: 3px;
+      text-align: center;
+      text-transform: uppercase;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type=text]::placeholder { color: #c4c4c4; letter-spacing: 1px; }
+    input[type=text]:focus { border-color: #bcbcbc; }
+    input[type=text]:disabled { opacity: 0.55; }
+
+    .check {
+      flex: none;
+      height: 46px;
+      padding: 0 13px;
+      border: none;
+      border-radius: 7px;
+      background: var(--ink);
+      color: #fff;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .check:hover { background: #000; }
+    .check:disabled { opacity: 0.4; cursor: default; }
+    .check--sm { height: 26px; padding: 0 11px; font-size: 9px; letter-spacing: 0.04em; }
+
+    /* ── stage 2: camo image + checkbox grid ── */
+    .stage--2 { display: flex; flex-direction: column; }
+
+    .l2__head { display: flex; align-items: center; gap: 8px; min-height: 26px; margin-bottom: 6px; padding-right: 24px; }
+    .l2__task { flex: 1 1 auto; min-width: 0; display: block; height: 22px; }
+    .l2__img {
+      display: block;
+      width: 100%;
+      height: 50px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #eef1f8;
+    }
+    .l2__rowwrap { position: relative; margin: 5px 1px 0; }
+    .l2__bar {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 0;
+      border-radius: 5px;
+      background: linear-gradient(90deg, #c6f2d3, #5be37b);
+      opacity: 0.5;
+      transition: width 0.7s linear;
+      pointer-events: none;
+    }
+    .l2__row { position: relative; display: grid; gap: 0; }
+    .l2__cell { display: flex; justify-content: center; }
+    .l2__cell input[type=checkbox] {
+      width: 17px;
+      height: 17px;
+      margin: 0;
+      cursor: pointer;
+      accent-color: var(--accent);
+    }
+
+    /* ── stage 3: done ── */
+    .stage--done { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+    .done__check { width: 54px; height: 54px; }
+    .done__check circle { fill: none; stroke: var(--accent); stroke-width: 2; opacity: 0.3; }
+    .done__check path {
+      fill: none;
+      stroke: #1a9e4b;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 48;
+      stroke-dashoffset: 48;
+    }
+    .stage--done:not([data-off]) .done__check path { animation: draw 0.5s 0.15s ease forwards; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    .done__text {
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 500;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: #1a9e4b;
+    }
+
+    /* ── stage progress dots (vertical column, top-right) ── */
+    .dots {
+      position: absolute;
+      right: 10px;
+      top: 32px;
+      height: 46px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 5px;
+    }
+    /* align the dots with the active stage's first row */
+    .stage--1:not([data-off]) ~ .dots { top: 32px; height: 46px; }
+    .stage--2:not([data-off]) ~ .dots { top: 12px; height: 26px; }
+    .stage--done:not([data-off]) ~ .dots { top: 12px; height: 46px; }
+    .dots .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 3px;
+      background: #dedede;
+      transition: width 0.32s ease, background 0.3s;
+    }
+    .dots .dot.on { width: 18px; background: var(--ink); }
+    .dots .dot.done { background: var(--accent); }
+
+    /* honeypots — invisible to humans, tempting to bots */
+    .hp {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .msg {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 6px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      min-height: 13px;
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+    .msg.ok { color: #1a9e4b; }
+    .msg.bad { color: #e0344b; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-3px); }
+    }
+    .captcha.shake { animation: shake 0.36s; }
+
+    @media (max-width: 560px) {
+      .brand__name { display: none; }
+      #cv { width: 120px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="captcha" id="captcha">
+
+    <div class="stage stage--1" id="stage1">
+      <div class="strip">
+        <span class="brand">
+          <span class="brand__mark">і<span class="dot">.</span></span>
+          <span class="brand__name">капча</span>
+        </span>
+
+        <canvas id="cv" title="Обновить задание" role="img" aria-label="Капча: нажмите, чтобы обновить"></canvas>
+
+        <input id="inp" type="text" inputmode="latin" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="5" placeholder="код" aria-label="Ответ на капчу">
+
+        <button class="check" id="check" type="button">Проверить</button>
+      </div>
+    </div>
+
+    <div class="stage stage--2" id="stage2" data-off aria-hidden="true">
+      <div class="l2__head">
+        <canvas class="l2__task" id="l2task" role="img" aria-label="Задание второго шага"></canvas>
+        <button class="check check--sm" id="l2check" type="button">Проверить</button>
+      </div>
+      <canvas class="l2__img" id="l2img" role="img" aria-label="Изображение с символами"></canvas>
+      <div class="l2__rowwrap">
+        <div class="l2__bar" id="l2bar"></div>
+        <div class="l2__row" id="l2row"></div>
+        <input class="hp" id="hpcb" type="checkbox" name="confirm_contact" tabindex="-1" autocomplete="off" aria-hidden="true">
+      </div>
+    </div>
+
+    <div class="stage stage--done" id="stage3" data-off aria-hidden="true">
+      <svg class="done__check" viewBox="0 0 52 52" aria-hidden="true">
+        <circle cx="26" cy="26" r="24"></circle>
+        <path d="M15 27 L23 35 L38 18"></path>
+      </svg>
+      <div class="done__text">Капча пройдена</div>
+    </div>
+
+    <input class="hp" id="hpEmail" type="text" name="email" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <input class="hp" id="hpUrl" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+    <div class="dots" id="dots" aria-hidden="true">
+      <span class="dot on" id="dot1"></span>
+      <span class="dot" id="dot2"></span>
+    </div>
+
+    <div class="msg" id="msg" aria-live="polite"></div>
+  </div>
+
+  <script>
+    (function () {
+      var cv = document.getElementById('cv');
+      var inp = document.getElementById('inp');
+      var hpEmail = document.getElementById('hpEmail');
+      var hpUrl = document.getElementById('hpUrl');
+      var check = document.getElementById('check');
+      var msg = document.getElementById('msg');
+      var card = document.getElementById('captcha');
+      var stage1 = document.getElementById('stage1');
+      var stage2 = document.getElementById('stage2');
+      var stage3 = document.getElementById('stage3');
+      var dot1 = document.getElementById('dot1');
+      var dot2 = document.getElementById('dot2');
+      var l2task = document.getElementById('l2task');
+      var l2img = document.getElementById('l2img');
+      var l2row = document.getElementById('l2row');
+      var l2bar = document.getElementById('l2bar');
+      var l2check = document.getElementById('l2check');
+      var hpcb = document.getElementById('hpcb');
+
+      var CHARS = 'ACDEFGHJKLMNPQRSTUVWXYZ23456789';
+      var PALETTE = ['#33257a', '#134478', '#7c254c', '#1c6750', '#6a4410', '#46206f', '#243b6b', '#5b2a20'];
+      var TEXTFONTS = [
+        '"Arial Black", Arial, sans-serif',
+        'Impact, "Arial Black", sans-serif',
+        'Calibri, "Segoe UI", Arial, sans-serif',
+        '"Comic Sans MS", "Comic Sans", cursive',
+        'Verdana, Geneva, sans-serif',
+        'Tahoma, Geneva, sans-serif',
+        'Georgia, "Times New Roman", serif'
+      ];
+      var STYLES = ['solid', 'solid', 'solid', 'serif', 'mono'];
+      var H = 46;
+
+      var challenge = null;
+      var solved = false;
+      var passedL1 = false;
+      var renderedAt = 0;
+      var attempts = 0;
+      var lockedUntil = 0;
+
+      var ptrDist = 0, ptrTurns = 0, lastX = null, lastY = null, prevAng = null;
+      var keyCount = 0;
+
+      function rand(n) { return Math.floor(Math.random() * n); }
+      function pick(a) { return a[rand(a.length)]; }
+      function rndChars(n) { var s = ''; for (var i = 0; i < n; i++) s += CHARS[rand(CHARS.length)]; return s; }
+
+      function newChallenge() {
+        if (Math.random() < 0.7) {
+          var s = rndChars(5);
+          return { mode: 'code', display: s, answer: s };
+        }
+        var a = 1 + rand(9), b = 1 + rand(9);
+        if (Math.random() < 0.5) {
+          if (a < b) { var t = a; a = b; b = t; }
+          return { mode: 'math', display: a + ' - ' + b + ' =', answer: String(a - b) };
+        }
+        return { mode: 'math', display: a + ' + ' + b + ' =', answer: String(a + b) };
+      }
+
+      /* ── canvas helpers ── */
+      function ctx2d() {
+        var w = cv.clientWidth || 156;
+        var dpr = Math.min(2, window.devicePixelRatio || 1);
+        cv.width = Math.round(w * dpr);
+        cv.height = Math.round(H * dpr);
+        cv.style.height = H + 'px';
+        var x = cv.getContext('2d');
+        x.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return { x: x, w: w, h: H, dpr: dpr };
+      }
+      function mkOff(w, h, dpr) {
+        var off = document.createElement('canvas');
+        off.width = Math.round(w * dpr);
+        off.height = Math.round(h * dpr);
+        var o = off.getContext('2d');
+        o.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return off;
+      }
+
+      /* ── paper ── */
+      function drawPaper(x, w, h) {
+        var g = x.createLinearGradient(0, 0, w, h);
+        g.addColorStop(0, '#f8f7f0');
+        g.addColorStop(0.5, '#eef1ef');
+        g.addColorStop(1, '#e5ebf3');
+        x.fillStyle = g;
+        x.fillRect(0, 0, w, h);
+        for (var i = 0; i < 4; i++) {
+          var rg = x.createRadialGradient(Math.random() * w, Math.random() * h, 1, Math.random() * w, Math.random() * h, Math.max(w, h) * 0.7);
+          rg.addColorStop(0, pick(['rgba(90,120,200,0.06)', 'rgba(120,90,180,0.06)', 'rgba(90,170,120,0.05)']));
+          rg.addColorStop(1, 'rgba(0,0,0,0)');
+          x.fillStyle = rg;
+          x.fillRect(0, 0, w, h);
+        }
+      }
+
+      /* ── guilloche ── */
+      function drawGuilloche(x, w, h) {
+        var cx = w / 2, cy = h / 2, R = Math.min(w, h) * 1.2;
+        var inks = ['rgba(40,70,140,', 'rgba(150,50,110,', 'rgba(30,120,110,'];
+        for (var c = 0; c < 4; c++) {
+          x.strokeStyle = inks[c % 3] + '0.1)';
+          x.lineWidth = 0.7;
+          x.beginPath();
+          var k = 3 + c, amp = 0.45 + 0.08 * c;
+          for (var i = 0; i <= 720; i++) {
+            var a = i * Math.PI / 180;
+            var rr = R * 0.6 * (0.55 + amp * Math.cos(k * a));
+            var px = cx + Math.cos(a) * rr * 1.05 + Math.cos(a * (k + 1)) * 2;
+            var py = cy + Math.sin(a) * rr * 0.9 + Math.sin(a * (k + 1)) * 2;
+            if (i === 0) x.moveTo(px, py); else x.lineTo(px, py);
+          }
+          x.stroke();
+        }
+      }
+
+      /* ── security thread ── */
+      function drawThread(x, w, h) {
+        x.save();
+        x.strokeStyle = 'rgba(30,50,110,0.22)';
+        x.lineWidth = 1.1;
+        x.setLineDash([3, 2.5]);
+        x.beginPath();
+        var base = w * 0.72;
+        for (var y = 0; y <= h; y += 2) {
+          var xx = base + Math.sin(y * 0.16) * 2.5;
+          if (y === 0) x.moveTo(xx, y); else x.lineTo(xx, y);
+        }
+        x.stroke();
+        x.setLineDash([]);
+        x.restore();
+      }
+
+      function drawWatermark(x, w, h) {
+        x.save();
+        x.fillStyle = 'rgba(40,70,140,0.06)';
+        x.font = '700 ' + Math.round(h * 0.86) + 'px "Arial Black", Arial, sans-serif';
+        x.textAlign = 'center';
+        x.textBaseline = 'middle';
+        x.fillText('і', w / 2, h / 2 + 1);
+        x.restore();
+      }
+
+      /* ── one readable glyph with a mild random style ── */
+      function drawGlyph(x, ch, cx, cy, size, style, ink, rot, skew, sy) {
+        x.save();
+        x.translate(cx, cy);
+        x.rotate(rot);
+        x.transform(1, skew, 0, sy, 0, 0);
+        x.textAlign = 'center';
+        x.textBaseline = 'middle';
+
+        if (style === 'serif') x.font = '700 ' + size + 'px Georgia, "Times New Roman", serif';
+        else if (style === 'mono') x.font = '700 ' + size + 'px "Courier New", monospace';
+        else x.font = '700 ' + size + 'px "Arial Black", Arial, sans-serif';
+
+        x.shadowColor = 'rgba(255,255,255,0.75)';
+        x.shadowOffsetX = 1;
+        x.shadowOffsetY = 1;
+        x.shadowBlur = 0.6;
+        x.fillStyle = ink;
+        x.fillText(ch, 0, 0);
+        x.restore();
+      }
+
+      /* ── readable glyph layer: even spacing, mild tilt, no overlap ── */
+      function drawGlyphLayer(x, w, h) {
+        var disp = challenge.display;
+        var n = disp.length;
+        var pad = 9;
+        var slot = (w - pad * 2) / n;
+        var base = Math.max(19, Math.min(29, Math.round(slot * 1.12)));
+
+        x.textAlign = 'center';
+        x.textBaseline = 'middle';
+
+        var inks = [], styles = [], rots = [], sys = [], sizes = [], cys = [], xs = [];
+        for (var i = 0; i < n; i++) {
+          inks[i] = pick(PALETTE);
+          styles[i] = pick(STYLES);
+          rots[i] = (Math.random() - 0.5) * 0.3;
+          sys[i] = 0.92 + Math.random() * 0.16;
+          sizes[i] = base + rand(3) - 1;
+          cys[i] = h / 2 + (Math.random() - 0.5) * 5;
+          xs[i] = pad + slot * (i + 0.5) + (Math.random() - 0.5) * 2.5;
+        }
+
+        for (var v = 0; v < 2; v++) {
+          x.save();
+          x.strokeStyle = 'rgba(60,80,140,0.2)';
+          x.lineWidth = 0.8;
+          x.beginPath();
+          var vx = pad + slot * Math.random() * n;
+          x.moveTo(vx, 4);
+          x.bezierCurveTo(vx + (Math.random() - 0.5) * 8, h * 0.35, vx + (Math.random() - 0.5) * 8, h * 0.65, vx + (Math.random() - 0.5) * 6, h - 4);
+          x.stroke();
+          x.restore();
+        }
+
+        for (var k = 0; k < n; k++) {
+          drawGlyph(x, disp[k], xs[k], cys[k], sizes[k], styles[k], inks[k], rots[k], (Math.random() - 0.5) * 0.16, sys[k]);
+        }
+      }
+
+      /* ── wave warp ── */
+      function warpBlit(dest, off, w, h, dpr) {
+        var slice = 2;
+        var f1 = 1.2 + Math.random() * 0.6, f2 = 1.6 + Math.random() * 0.8;
+        for (var sx = 0; sx < w; sx += slice) {
+          var t = sx / w;
+          var dy = Math.sin(t * Math.PI * 2 * f1) * 1.4 + Math.sin(t * Math.PI * 2 * f2 + 1) * 0.7;
+          var dx = Math.sin(t * Math.PI * 2 * f1 * 0.6 + 1.2) * 0.9;
+          var sw = Math.min(slice, w - sx);
+          dest.drawImage(off, Math.round(sx * dpr), 0, Math.round(sw * dpr), off.height, sx + dx, dy, sw, h);
+        }
+      }
+
+      function drawSpeckle(x, w, h) {
+        for (var i = 0; i < 70; i++) {
+          x.fillStyle = 'rgba(' + (40 + rand(120)) + ',' + (50 + rand(110)) + ',' + (90 + rand(120)) + ',' + (0.15 + Math.random() * 0.3).toFixed(2) + ')';
+          x.fillRect(Math.random() * w, Math.random() * h, Math.random() < 0.2 ? 2 : 1, 1);
+        }
+      }
+
+      function drawShine(x, w, h) {
+        var g = x.createLinearGradient(0, h, w, 0);
+        g.addColorStop(0, 'rgba(120,0,255,0)');
+        g.addColorStop(0.45, 'rgba(0,180,255,0.08)');
+        g.addColorStop(0.56, 'rgba(255,0,150,0.07)');
+        g.addColorStop(1, 'rgba(120,0,255,0)');
+        x.fillStyle = g;
+        x.fillRect(0, 0, w, h);
+      }
+
+      function drawCode() {
+        var c = ctx2d();
+        var x = c.x, w = c.w, h = c.h, dpr = c.dpr;
+
+        drawPaper(x, w, h);
+        drawGuilloche(x, w, h);
+        drawThread(x, w, h);
+        drawWatermark(x, w, h);
+
+        for (var l = 0; l < 4; l++) {
+          x.save();
+          x.strokeStyle = 'rgba(70,90,150,0.2)';
+          x.lineWidth = 0.7 + Math.random() * 0.5;
+          x.beginPath();
+          var y = 6 + Math.random() * (h - 12);
+          x.moveTo(-4, y);
+          x.bezierCurveTo(w * 0.33, y + (Math.random() - 0.5) * 10, w * 0.66, y + (Math.random() - 0.5) * 10, w + 4, y + (Math.random() - 0.5) * 6);
+          x.stroke();
+          x.restore();
+        }
+
+        var off = mkOff(w, h, dpr);
+        drawGlyphLayer(off.getContext('2d'), w, h);
+        var tmp = mkOff(w, h, dpr);
+        warpBlit(tmp.getContext('2d'), off, w, h, dpr);
+        x.drawImage(tmp, 0, 0, w, h);
+
+        for (var o = 0; o < 2; o++) {
+          x.save();
+          x.strokeStyle = 'rgba(70,90,150,0.15)';
+          x.lineWidth = 0.7;
+          x.beginPath();
+          var oy = 8 + Math.random() * (h - 16);
+          x.moveTo(-4, oy);
+          x.bezierCurveTo(w * 0.3, oy + (Math.random() - 0.5) * 14, w * 0.7, oy + (Math.random() - 0.5) * 14, w + 4, oy);
+          x.stroke();
+          x.restore();
+        }
+
+        drawSpeckle(x, w, h);
+        drawShine(x, w, h);
+        renderedAt = Date.now();
+      }
+
+      function drawSolved() {
+        var c = ctx2d();
+        var x = c.x, w = c.w, h = c.h;
+        var g = x.createLinearGradient(0, 0, w, h);
+        g.addColorStop(0, '#eefaf2');
+        g.addColorStop(1, '#d9f5e5');
+        x.fillStyle = g;
+        x.fillRect(0, 0, w, h);
+        x.strokeStyle = '#1a9e4b';
+        x.lineWidth = 3;
+        x.lineCap = 'round';
+        x.lineJoin = 'round';
+        x.beginPath();
+        x.moveTo(w / 2 - 12, h / 2 + 1);
+        x.lineTo(w / 2 - 3, h / 2 + 10);
+        x.lineTo(w / 2 + 13, h / 2 - 9);
+        x.stroke();
+        drawSpeckle(x, w, h);
+      }
+
+      function setMsg(t, cls) {
+        msg.textContent = t;
+        msg.className = 'msg' + (cls ? ' ' + cls : '');
+      }
+      function shake() {
+        card.classList.remove('shake');
+        void card.offsetWidth;
+        card.classList.add('shake');
+      }
+
+      function activate(el) { el.removeAttribute('data-off'); }
+      function deactivate(el) { el.setAttribute('data-off', ''); }
+      function setDots(a, b) {
+        dot1.className = 'dot' + (a ? ' ' + a : '');
+        dot2.className = 'dot' + (b ? ' ' + b : '');
+      }
+
+      function refreshCode() {
+        if (solved || passedL1) return;
+        challenge = newChallenge();
+        inp.value = '';
+        inp.setAttribute('placeholder', challenge.mode === 'math' ? 'ответ' : 'код');
+        drawCode();
+        setMsg('');
+        card.classList.remove('ok', 'bad');
+      }
+
+      /* ── LEVEL 2: camo image + checkbox grid ── */
+      var RULES = [
+        { key: 'text', label: 'Отметьте все буквы и цифры' },
+        { key: 'shape', label: 'Отметьте все геометрические фигуры' },
+        { key: 'emoji', label: 'Отметьте все смайлики' }
+      ];
+      var SHAPES = ['triangle', 'square', 'circle', 'diamond', 'pentagon', 'hexagon', 'star', 'cross'];
+      var EMOJI = ['\uD83D\uDE00', '\uD83D\uDE0E', '\u2B50', '\u2764\uFE0F', '\uD83C\uDF40', '\u26A1', '\uD83C\uDFAF', '\uD83D\uDD25', '\uD83C\uDF08'];
+      var CATS = ['text', 'shape', 'emoji'];
+      var L2 = null;
+      var l2Attempts = 0;
+      var L2H = 50;
+
+      function hexName() {
+        var h = '0123456789abcdef', s = '';
+        for (var i = 0; i < 10; i++) s += h[rand(16)];
+        return s;
+      }
+
+      function poly(x, R, sides, rot) {
+        var step = Math.PI * 2 / sides;
+        for (var i = 0; i < sides; i++) {
+          var a = rot + i * step;
+          var px = Math.cos(a) * R, py = Math.sin(a) * R;
+          if (i === 0) x.moveTo(px, py); else x.lineTo(px, py);
+        }
+      }
+      function star(x, R, points, rot, ratio) {
+        var step = Math.PI / points;
+        for (var i = 0; i < points * 2; i++) {
+          var r = (i % 2) ? R * ratio : R;
+          var a = rot + i * step;
+          var px = Math.cos(a) * r, py = Math.sin(a) * r;
+          if (i === 0) x.moveTo(px, py); else x.lineTo(px, py);
+        }
+      }
+      function drawShape(x, name, R) {
+        x.beginPath();
+        if (name === 'circle') x.arc(0, 0, R * 0.9, 0, Math.PI * 2);
+        else if (name === 'square') x.rect(-R * 0.78, -R * 0.78, R * 1.56, R * 1.56);
+        else if (name === 'triangle') poly(x, R, 3, -Math.PI / 2);
+        else if (name === 'diamond') poly(x, R, 4, Math.PI / 4);
+        else if (name === 'pentagon') poly(x, R, 5, -Math.PI / 2);
+        else if (name === 'hexagon') poly(x, R, 6, 0);
+        else if (name === 'star') star(x, R, 5, -Math.PI / 2, 0.45);
+        else if (name === 'cross') {
+          var t = R * 0.3;
+          x.rect(-t, -R, t * 2, R * 2);
+          x.moveTo(R, -t);
+          x.rect(-R, -t, R * 2, t * 2);
+        }
+        x.closePath();
+        x.fill();
+      }
+
+      function buildL2() {
+        var rule = pick(RULES);
+        var n = 8 + rand(3);
+        var slots = [];
+        for (var i = 0; i < n; i++) {
+          var c;
+          if (i === 0) c = rule.key;
+          else if (i === 1) c = pick(CATS.filter(function (k) { return k !== rule.key; }));
+          else c = pick(CATS);
+          slots.push(c);
+        }
+        var t = slots.filter(function (c) { return c === rule.key; }).length;
+        var guard = 0;
+        while (t < 2 && guard++ < 50) { slots[rand(n)] = rule.key; t = slots.filter(function (c) { return c === rule.key; }).length; }
+        while (t > n - 2 && guard++ < 100) { var idx = rand(n); if (slots[idx] === rule.key) slots[idx] = pick(CATS.filter(function (k) { return k !== rule.key; })); t = slots.filter(function (c) { return c === rule.key; }).length; }
+        var answer = [];
+        for (var j = 0; j < n; j++) if (slots[j] === rule.key) answer.push(j);
+        L2 = { rule: rule, slots: slots, answer: answer, n: n, checks: [] };
+      }
+
+      function drawL2Background(x, w, h) {
+        var g = x.createLinearGradient(0, 0, w, h);
+        g.addColorStop(0, '#f8f7f0');
+        g.addColorStop(0.5, '#eef1ef');
+        g.addColorStop(1, '#e5ebf3');
+        x.fillStyle = g;
+        x.fillRect(0, 0, w, h);
+        for (var i = 0; i < 3; i++) {
+          var rg = x.createRadialGradient(Math.random() * w, Math.random() * h, 1, Math.random() * w, Math.random() * h, Math.max(w, h) * 0.6);
+          rg.addColorStop(0, pick(['rgba(90,120,200,0.06)', 'rgba(120,90,180,0.06)', 'rgba(90,170,120,0.05)']));
+          rg.addColorStop(1, 'rgba(0,0,0,0)');
+          x.fillStyle = rg;
+          x.fillRect(0, 0, w, h);
+        }
+      }
+
+      function drawL2Slot(x, cat, cx, cy, size) {
+        size = Math.max(18, Math.min(30, Math.round(size)));
+        x.save();
+        x.translate(cx, cy);
+        x.rotate((Math.random() - 0.5) * 0.34);
+        x.textAlign = 'center';
+        x.textBaseline = 'middle';
+        var ink = pick(PALETTE);
+        if (cat === 'text') {
+          x.font = '700 ' + size + 'px ' + pick(TEXTFONTS);
+          x.shadowColor = 'rgba(255,255,255,0.75)';
+          x.shadowOffsetX = 1;
+          x.shadowOffsetY = 1;
+          x.shadowBlur = 0.6;
+          x.fillStyle = ink;
+          x.fillText(pick(CHARS), 0, 0);
+        } else if (cat === 'emoji') {
+          x.font = Math.round(size * 0.98) + 'px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
+          x.fillStyle = '#000';
+          x.fillText(pick(EMOJI), 0, 0);
+        } else {
+          x.fillStyle = ink;
+          x.strokeStyle = ink;
+          drawShape(x, pick(SHAPES), size * 0.62);
+        }
+        x.restore();
+      }
+
+      function drawL2Noise(x, w, h) {
+        for (var l = 0; l < 6; l++) {
+          x.save();
+          x.strokeStyle = 'rgba(' + (40 + rand(60)) + ',' + (60 + rand(60)) + ',' + (110 + rand(60)) + ',0.22)';
+          x.lineWidth = 0.7 + Math.random() * 0.6;
+          x.beginPath();
+          var y = Math.random() * h;
+          x.moveTo(-4, y);
+          x.bezierCurveTo(w * 0.33, y + (Math.random() - 0.5) * 22, w * 0.66, y + (Math.random() - 0.5) * 22, w + 4, y + (Math.random() - 0.5) * 14);
+          x.stroke();
+          x.restore();
+        }
+        for (var i = 0; i < 120; i++) {
+          x.fillStyle = 'rgba(' + (40 + rand(120)) + ',' + (50 + rand(110)) + ',' + (90 + rand(120)) + ',' + (0.15 + Math.random() * 0.3).toFixed(2) + ')';
+          x.fillRect(Math.random() * w, Math.random() * h, Math.random() < 0.2 ? 2 : 1, 1);
+        }
+        for (var d = 0; d < 2; d++) {
+          x.save();
+          x.globalAlpha = 0.16;
+          x.font = '700 ' + (15 + rand(9)) + 'px "Arial Black", Arial, sans-serif';
+          x.fillStyle = pick(PALETTE);
+          x.translate(Math.random() * w, h / 2 + (Math.random() - 0.5) * 14);
+          x.rotate((Math.random() - 0.5) * 1.2);
+          x.textAlign = 'center';
+          x.textBaseline = 'middle';
+          x.fillText(pick(CHARS), 0, 0);
+          x.restore();
+        }
+      }
+
+      function drawL2() {
+        if (!L2) return;
+        var dpr = Math.min(2, window.devicePixelRatio || 1);
+        var w = l2img.clientWidth || (card.clientWidth - 26) || 300;
+        l2img.width = Math.round(w * dpr);
+        l2img.height = Math.round(L2H * dpr);
+        var x = l2img.getContext('2d');
+        x.setTransform(dpr, 0, 0, dpr, 0, 0);
+        drawL2Background(x, w, L2H);
+
+        var n = L2.n, slot = w / n;
+        for (var i = 0; i < n; i++) {
+          drawL2Slot(x, L2.slots[i], slot * (i + 0.5), L2H / 2 + (Math.random() - 0.5) * 5, Math.min(slot * 0.7, 30));
+        }
+        drawL2Noise(x, w, L2H);
+      }
+
+      function drawL2Task() {
+        if (!L2) return;
+        var dpr = Math.min(2, window.devicePixelRatio || 1);
+        var w = l2task.clientWidth || (card.clientWidth - 120) || 260;
+        var h = 22;
+        l2task.width = Math.round(w * dpr);
+        l2task.height = Math.round(h * dpr);
+        var x = l2task.getContext('2d');
+        x.setTransform(dpr, 0, 0, dpr, 0, 0);
+        x.clearRect(0, 0, w, h);
+        x.font = '600 13px -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+        x.fillStyle = '#141414';
+        x.textAlign = 'left';
+        x.textBaseline = 'middle';
+        x.fillText(L2.rule.label, 1, h / 2 + 1);
+      }
+
+      function buildL2Row() {
+        var n = L2.n;
+        l2row.style.gridTemplateColumns = 'repeat(' + n + ', 1fr)';
+        l2row.innerHTML = '';
+        L2.checks = [];
+        for (var i = 0; i < n; i++) {
+          var cell = document.createElement('div');
+          cell.className = 'l2__cell';
+          var cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.setAttribute('name', hexName());
+          cb.setAttribute('aria-label', 'Отметка ' + (i + 1));
+          cell.appendChild(cb);
+          l2row.appendChild(cell);
+          L2.checks.push(cb);
+        }
+      }
+
+      function mountL2() {
+        buildL2();
+        buildL2Row();
+        l2bar.style.transition = 'none';
+        l2bar.style.width = '0';
+        deactivate(stage1);
+        activate(stage2);
+        l2check.disabled = false;
+        /* layout is already computed (stage2 is always in the grid cell) */
+        drawL2Task();
+        drawL2();
+        l2bar.getBoundingClientRect();
+        l2bar.style.transition = '';
+      }
+
+      function renderL2() {
+        buildL2();
+        buildL2Row();
+        l2bar.style.transition = 'none';
+        l2bar.style.width = '0';
+        drawL2Task();
+        drawL2();
+        l2bar.getBoundingClientRect();
+        l2bar.style.transition = '';
+      }
+
+      function openLock(sec) {
+        lockedUntil = Date.now() + sec * 1000;
+        setMsg('Слишком много попыток, подождите ' + sec + ' сек', 'bad');
+        l2check.disabled = true;
+        window.setTimeout(function () { if (!solved) l2check.disabled = false; }, sec * 1000);
+      }
+
+      function checkL2() {
+        if (!L2 || solved) return;
+        if (hpcb.checked) { hpcb.checked = false; l2Attempts = 0; renderL2(); openLock(60); return; }
+        if (Date.now() < lockedUntil) { setMsg('Слишком много попыток, подождите', 'bad'); return; }
+        var got = [];
+        for (var i = 0; i < L2.n; i++) if (L2.checks[i].checked) got.push(i);
+        var ans = L2.answer, ok = got.length === ans.length;
+        if (ok) { for (var j = 0; j < ans.length; j++) if (got[j] !== ans[j]) { ok = false; break; } }
+        if (ok) {
+          l2Attempts = 0;
+          l2Success();
+        } else {
+          l2Attempts++;
+          card.classList.add('bad');
+          card.classList.remove('ok');
+          shake();
+          if (l2Attempts >= 3) { l2Attempts = 0; openLock(20); }
+          else setMsg('Неверно, попробуйте ещё раз', 'bad');
+          renderL2();
+        }
+      }
+
+      /* verification animation: checkboxes fill like a progress bar, then done */
+      function l2Success() {
+        if (solved) return;
+        solved = true;
+        l2check.disabled = true;
+        setMsg('Проверка…', '');
+        l2bar.style.width = '100%';
+        var n = L2.n;
+        for (var i = 0; i < n; i++) {
+          (function (idx) {
+            window.setTimeout(function () {
+              if (L2.checks[idx]) L2.checks[idx].checked = true;
+            }, 90 + idx * (620 / n));
+          })(i);
+        }
+        window.setTimeout(function () {
+          deactivate(stage2);
+          activate(stage3);
+          setDots('done', 'done');
+          setMsg('');
+          card.classList.add('ok');
+          card.classList.remove('bad');
+          postSuccess();
+        }, 90 + 620 + 300);
+      }
+
+      function postSuccess() {
+        try {
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'captcha-success', source: 'i-studio' }, '*');
+          }
+        } catch (e) {}
+      }
+
+      function success() {
+        passedL1 = true;
+        drawSolved();
+        card.classList.add('ok');
+        card.classList.remove('bad');
+        inp.disabled = true;
+        check.disabled = true;
+        setDots('done', 'on');
+        setMsg('');
+        mountL2();
+      }
+
+      function fail(t) {
+        card.classList.add('bad');
+        card.classList.remove('ok');
+        setMsg(t || 'Неверно, попробуйте ещё раз', 'bad');
+        shake();
+        inp.value = '';
+        window.setTimeout(function () {
+          if (solved || passedL1) return;
+          challenge = newChallenge();
+          inp.setAttribute('placeholder', challenge.mode === 'math' ? 'ответ' : 'код');
+          drawCode();
+          inp.focus();
+        }, 420);
+      }
+
+      function checkCode() {
+        if (solved || passedL1) return;
+        if (Date.now() < lockedUntil) { setMsg('Слишком много попыток, подождите', 'bad'); return; }
+        if (hpEmail.value || hpUrl.value) { hpEmail.value = ''; hpUrl.value = ''; fail('Не удалось подтвердить, что вы человек'); return; }
+
+        var elapsed = Date.now() - renderedAt;
+        var human = (keyCount >= 3) || (ptrDist > 40 && ptrTurns >= 1);
+        if (elapsed < 800 || !human) { fail('Подтвердите, что вы человек'); return; }
+
+        var val = inp.value.trim().toUpperCase();
+        if (!val) { card.classList.add('bad'); setMsg('Введите ответ', 'bad'); return; }
+        if (val === challenge.answer.toUpperCase()) {
+          attempts = 0;
+          success();
+        } else {
+          attempts++;
+          if (attempts >= 5) { attempts = 0; lockedUntil = Date.now() + 20000; fail('Слишком много попыток, подождите 20 сек'); }
+          else fail('Неверно, попробуйте ещё раз');
+        }
+      }
+
+      /* ── behavioral tracking ── */
+      function onMove(e) {
+        var pt = e.touches ? e.touches[0] : e;
+        if (!pt) return;
+        var x = pt.clientX, y = pt.clientY;
+        if (lastX != null) {
+          var dx = x - lastX, dy = y - lastY;
+          ptrDist += Math.sqrt(dx * dx + dy * dy);
+          if (ptrDist > 2) {
+            var ang = Math.atan2(dy, dx);
+            if (prevAng != null && Math.abs(ang - prevAng) > 0.35) ptrTurns++;
+            prevAng = ang;
+          }
+        }
+        lastX = x; lastY = y;
+      }
+      window.addEventListener('pointermove', onMove, { passive: true });
+      window.addEventListener('touchmove', onMove, { passive: true });
+      window.addEventListener('mousemove', onMove, { passive: true });
+
+      check.addEventListener('click', checkCode);
+      l2check.addEventListener('click', checkL2);
+      cv.addEventListener('click', refreshCode);
+      inp.addEventListener('keydown', function (e) {
+        keyCount++;
+        if (e.key === 'Enter') { e.preventDefault(); checkCode(); }
+      });
+      inp.addEventListener('input', function () {
+        inp.value = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      });
+      window.addEventListener('resize', function () {
+        if (passedL1) drawSolved(); else drawCode();
+        if (L2 && !solved && passedL1) { drawL2Task(); drawL2(); }
+      });
+
+      refreshCode();
+    })();
+  </script>
+</body>
+</html>
