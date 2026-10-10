@@ -36,16 +36,18 @@
       color: var(--ink);
     }
 
-    /* cropped tightly to the card when embedded in an iframe */
+    /* cropped tightly to the card when embedded in an iframe:
+       прямые края + нулевые отступы — iframe обрезается ровно по прямоугольнику плашки */
     html.embedded, html.embedded body { height: auto; }
-    html.embedded body { padding: 8px; }
+    html.embedded body { padding: 0; }
+    html.embedded .captcha { box-shadow: none; }
 
     /* ── card: fixed footprint, stages are stacked in the same cell ── */
     .captcha {
       position: relative;
       width: min(480px, 94vw);
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: 0;
       background: #fff;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 14px 40px -28px rgba(0, 0, 0, 0.35);
       display: grid;

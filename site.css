@@ -516,10 +516,11 @@ footer.site a:hover { color: var(--ink); }
   background: transparent;
 }
 
-/* ── живые примеры (страница «Примеры») ── */
-.demo { margin: 16px 0 4px; padding: 16px; border: 1px dashed var(--line-strong); border-radius: 14px; }
+/* ── живые примеры (страница «Примеры») ──
+   без рамки-«окошка»: капча лежит прямо на странице, высоту задаёт сам виджет */
+.demo { margin: 16px 0 4px; }
 .demo iframe { display: block; width: 100%; height: 180px; border: 0; background: transparent; }
-.demo--dark { background: #0d0d14; border-color: #2a2a36; }
+.demo--dark { background: #0d0d14; padding: 16px; }
 .demo__caption { font-size: 12.5px; color: var(--dim); margin-top: 10px; }
 .demo__row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
 
